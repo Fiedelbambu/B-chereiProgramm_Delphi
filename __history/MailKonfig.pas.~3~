@@ -1,0 +1,42 @@
+unit MailKonfig;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
+  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls;
+
+type
+  TKonfig_Mail = class(TFrame)
+    lblMailKonfig: TLabel;
+    lblPasswort: TLabel;
+    lblBenutzername: TLabel;
+    lblPortImap: TLabel;
+    lblHostImap: TLabel;
+    LblOptional: TLabel;
+    lblProt: TLabel;
+    lblHost: TLabel;
+    lblSmtp: TLabel;
+    lblVerschluesselung: TLabel;
+    btnTestEmail: TButton;
+    EdtBenutzername: TEdit;
+    EdtPortImap: TEdit;
+    EdtHostImap: TEdit;
+    EdtPort: TEdit;
+    EdtHost: TEdit;
+    EdtSMTP: TEdit;
+    EdtPasswort: TEdit;
+    ComboBox: TComboBox;
+    btnSpeichern: TButton;
+    btnBearbeiten: TButton;
+  private
+    { Private-Deklarationen }
+  public
+    { Public-Deklarationen }
+  end;
+
+implementation
+
+{$R *.dfm}
+
+end.

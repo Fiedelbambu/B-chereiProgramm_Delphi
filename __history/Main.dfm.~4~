@@ -1,0 +1,24 @@
+object MainDashboard: TMainDashboard
+
+  Left = 0
+  Top = 0
+  Width = 640
+  Height = 480
+  TabOrder = 0
+  object lblMainHauptDashboard: TLabel
+    Left = 0
+    Top = 0
+    Width = 640
+    Height = 37
+    Align = alTop
+    Alignment = taCenter
+    Caption = ' Haupt-Dashboard'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -27
+    Font.Name = 'Segoe UI'
+    Font.Style = []
+    ParentFont = False
+    ExplicitWidth = 221
+  end
+end

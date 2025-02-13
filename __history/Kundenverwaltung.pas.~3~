@@ -1,0 +1,33 @@
+unit Kundenverwaltung;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
+  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Data.DB, Vcl.Grids,
+  Vcl.DBGrids, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.WinXCtrls;
+
+type
+  TFrame1 = class(TFrame)
+    lblKundenverwaltung: TLabel;
+    PaintBox1: TPaintBox;
+    lblSuchfelf: TLabel;
+    btn_Suchen: TButton;
+    PaintBox2: TPaintBox;
+    lblKundendaten: TLabel;
+    PaintBox3: TPaintBox;
+    DBGrid1: TDBGrid;
+    PaintBox4: TPaintBox;
+    btn_KundenAnlegen: TButton;
+    SBoxKundenverwaltung: TSearchBox;
+  private
+    { Private-Deklarationen }
+  public
+    { Public-Deklarationen }
+  end;
+
+implementation
+
+{$R *.dfm}
+
+end.

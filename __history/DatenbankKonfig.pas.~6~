@@ -1,0 +1,202 @@
+﻿unit DatenbankKonfig;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
+  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls;
+
+type
+  TKonfig_Datenbank = class(TFrame)
+    lblDataKonfig: TLabel;
+    lblServeradresse: TLabel;
+    lblPort: TLabel;
+    lblDatenbank: TLabel;
+    lblPasswort: TLabel;
+    lblBenutzername: TLabel;
+    EdtServeradresse: TEdit;
+    EdtPort: TEdit;
+    EdtDb: TEdit;
+    EdtNutzername: TEdit;
+    TEdtPass: TEdit;
+    btnTestVerbindung: TButton;
+    CheckBoxWinAuth: TCheckBox;
+    lblInfo: TLabel;
+    btnSpeichern: TButton;
+    btnBearbeiten: TButton;
+  private
+    { Private-Deklarationen }
+  public
+    { Public-Deklarationen }
+  end;
+
+implementation
+
+{$R *.dfm}
+
+end.
+
+
+
+{// Pseudocode für das Modul "Datenbank-Konfiguration"
+// Autor: Christian Fiedler
+
+MODULE DatenbankKonfiguration
+
+    // --- Deklaration der UI-Komponenten ---
+    VARIABLE serverAdresse            // Eingabefeld: Serveradresse
+    VARIABLE port                     // Eingabefeld: Port
+    VARIABLE datenbankName            // Eingabefeld: Datenbankname
+    VARIABLE benutzername             // Eingabefeld: Benutzername
+    VARIABLE passwort                 // Eingabefeld: Passwort
+    VARIABLE integrierteAuthCheckbox  // Checkbox: Integrierte Windows-Authentifizierung (TRUE/FALSE)
+
+    VARIABLE buttonTestverbindung     // Button: "Testverbindung"
+    VARIABLE buttonSpeichern          // Button: "Speichern"
+
+    // --- Initialisierung der Benutzeroberfläche ---
+    FUNCTION InitializeDBConfigUI()
+        // Standardwerte setzen (falls vorhanden)
+        serverAdresse = ""
+        port = ""
+        datenbankName = ""
+        benutzername = ""
+        passwort = ""
+        integrierteAuthCheckbox = FALSE
+
+        // Vorhandene Konfiguration laden (z. B. aus einer externen Datei oder Registrierung)
+        VARIABLE config = LoadDBConfigFromStorage()
+        IF config IS NOT NULL THEN
+            serverAdresse = config.serverAdresse
+            port = config.port
+            datenbankName = config.datenbankName
+            benutzername = config.benutzername
+            passwort = config.passwort
+            integrierteAuthCheckbox = config.integrierteWindowsAuthentifizierung
+        END IF
+
+        // UI-Felder mit den geladenen Werten füllen
+        CALL DisplayDBConfig(serverAdresse, port, datenbankName, benutzername, passwort, integrierteAuthCheckbox)
+
+        // Registriere Event-Handler für die Buttons
+        SET OnClick(buttonTestverbindung) TO OnTestverbindungButtonClick
+        SET OnClick(buttonSpeichern) TO OnSpeichernButtonClick
+    END FUNCTION
+
+    // --- Validierung der Eingabefelder ---
+    FUNCTION ValidateDBConfigInputs() RETURNS BOOLEAN
+        IF serverAdresse IS EMPTY THEN
+            CALL ShowError("Serveradresse darf nicht leer sein.")
+            RETURN FALSE
+        END IF
+
+        IF port IS EMPTY THEN
+            CALL ShowError("Port darf nicht leer sein.")
+            RETURN FALSE
+        END IF
+
+        IF datenbankName IS EMPTY THEN
+            CALL ShowError("Datenbankname darf nicht leer sein.")
+            RETURN FALSE
+        END IF
+
+        // Falls keine integrierte Authentifizierung genutzt wird, müssen Benutzername und Passwort vorhanden sein
+        IF NOT integrierteAuthCheckbox THEN
+            IF benutzername IS EMPTY THEN
+                CALL ShowError("Benutzername darf nicht leer sein.")
+                RETURN FALSE
+            END IF
+            IF passwort IS EMPTY THEN
+                CALL ShowError("Passwort darf nicht leer sein.")
+                RETURN FALSE
+            END IF
+        END IF
+
+        RETURN TRUE
+    END FUNCTION
+
+    // --- Aufbau des Connection-Strings ---
+    FUNCTION BuildConnectionString() RETURNS STRING
+        VARIABLE connString = "Server=" + serverAdresse + ";Port=" + port + ";Database=" + datenbankName + ";"
+        IF integrierteAuthCheckbox THEN
+            connString = connString + "Integrated Security=True;"
+        ELSE
+            connString = connString + "User Id=" + benutzername + ";Password=" + passwort + ";"
+        END IF
+        RETURN connString
+    END FUNCTION
+
+    // --- Testen der Datenbankverbindung ---
+    FUNCTION TestDBConnection() RETURNS BOOLEAN
+        VARIABLE connectionString = BuildConnectionString()
+        // TestConnection() ist eine abstrakte Funktion, die die Verbindung prüft und TRUE oder FALSE zurückgibt
+        VARIABLE success = Database.TestConnection(connectionString)
+        RETURN success
+    END FUNCTION
+
+    // --- Event-Handler für "Testverbindung" Button ---
+    FUNCTION OnTestverbindungButtonClick()
+        IF NOT ValidateDBConfigInputs() THEN
+            RETURN
+        END IF
+
+        IF TestDBConnection() THEN
+            CALL ShowMessage("Verbindung zur Datenbank erfolgreich hergestellt.")
+        ELSE
+            CALL ShowError("Fehler bei der Verbindung zur Datenbank. Bitte überprüfen Sie Ihre Eingaben.")
+        END IF
+    END FUNCTION
+
+    // --- Speichern der Konfiguration ---
+    FUNCTION SaveDBConfig()
+        IF NOT ValidateDBConfigInputs() THEN
+            RETURN
+        END IF
+
+        VARIABLE config = {
+            serverAdresse: serverAdresse,
+            port: port,
+            datenbankName: datenbankName,
+            benutzername: benutzername,
+            passwort: passwort,
+            integrierteWindowsAuthentifizierung: integrierteAuthCheckbox
+        }
+        // Speichern der Konfiguration in einer externen Datei (z. B. .ini, XML) oder im Registrierungsschlüssel
+        CALL SaveDBConfigToStorage(config)
+        CALL ShowMessage("Datenbank-Konfiguration wurde gespeichert.")
+    END FUNCTION
+
+    // --- Event-Handler für "Speichern" Button ---
+    FUNCTION OnSpeichernButtonClick()
+        CALL SaveDBConfig()
+    END FUNCTION
+
+    // --- Hilfsfunktionen für das Speichern/Laden der Konfiguration ---
+    FUNCTION LoadDBConfigFromStorage() RETURNS CONFIG
+        // Implementierung abhängig vom Zielsystem (z. B. Lesen aus einer .ini-Datei oder dem Registry)
+        RETURN ConfigStorage.Load("DBConfig")
+    END FUNCTION
+
+    FUNCTION SaveDBConfigToStorage(config)
+        // Implementierung abhängig vom Zielsystem (z. B. Schreiben in eine .ini-Datei oder den Registry-Schlüssel)
+        CALL ConfigStorage.Save("DBConfig", config)
+    END FUNCTION
+
+    // --- Darstellung der Konfiguration in der UI ---
+    FUNCTION DisplayDBConfig(server, port, dbName, user, pass, integratedAuth)
+        CALL SetText("ServerTextBox", server)
+        CALL SetText("PortTextBox", port)
+        CALL SetText("DatabaseNameTextBox", dbName)
+        CALL SetText("BenutzernameTextBox", user)
+        CALL SetText("PasswortTextBox", pass)
+        CALL SetCheckbox("IntegratedAuthCheckbox", integratedAuth)
+    END FUNCTION
+
+    // --- Haupt-Einstiegspunkt für das Modul ---
+    FUNCTION MainDBKonfiguration()
+        CALL InitializeDBConfigUI()
+        CALL StartEventLoop()
+    END FUNCTION
+
+END MODULE
+}

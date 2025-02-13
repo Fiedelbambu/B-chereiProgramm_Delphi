@@ -1,0 +1,47 @@
+unit Buchformular;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
+  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls;
+
+type
+  TBuchform = class(TFrame)
+    lblBuchformular: TLabel;
+    lblSprache: TLabel;
+    lblPlatznummer: TLabel;
+    lblRegal: TLabel;
+    lblAuflage: TLabel;
+    lblHerausgeber: TLabel;
+    lblAutor: TLabel;
+    lblISBN: TLabel;
+    lblGenre: TLabel;
+    lblName: TLabel;
+    EdtPublikationsjahr: TEdit;
+    EdtSeitenanzahl: TEdit;
+    EdtSprache: TEdit;
+    EdtPlatznummer: TEdit;
+    EdtRegal: TEdit;
+    EdtAuflage: TEdit;
+    EdtHerausgeber: TEdit;
+    EdtAutor: TEdit;
+    EdtIsbn: TEdit;
+    EdtGenre: TEdit;
+    EdtName: TEdit;
+    lblSeitenanzahl: TLabel;
+    lblPublikationsjahr: TLabel;
+    lbl: TLabel;
+    lblOptional: TLabel;
+    btnSuchen: TButton;
+  private
+    { Private-Deklarationen }
+  public
+    { Public-Deklarationen }
+  end;
+
+implementation
+
+{$R *.dfm}
+
+end.

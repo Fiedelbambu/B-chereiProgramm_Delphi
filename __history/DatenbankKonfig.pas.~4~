@@ -1,0 +1,35 @@
+unit DatenbankKonfig;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
+  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls;
+
+type
+  TKonfig_Datenbank = class(TFrame)
+    lblDataKonfig: TLabel;
+    lblServeradresse: TLabel;
+    lblPort: TLabel;
+    lblDatenbank: TLabel;
+    lblPasswort: TLabel;
+    lblBenutzername: TLabel;
+    EdtServeradresse: TEdit;
+    EdtPort: TEdit;
+    EdtDb: TEdit;
+    EdtNutzername: TEdit;
+    TEdtPass: TEdit;
+    btnTestVerbindung: TButton;
+    CheckBoxWinAuth: TCheckBox;
+    lblInfo: TLabel;
+  private
+    { Private-Deklarationen }
+  public
+    { Public-Deklarationen }
+  end;
+
+implementation
+
+{$R *.dfm}
+
+end.

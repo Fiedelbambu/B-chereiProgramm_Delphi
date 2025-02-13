@@ -1,0 +1,51 @@
+unit Kundenform;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
+  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
+  Vcl.ComCtrls, Vcl.ExtCtrls;
+
+type
+  TFrame2 = class(TFrame)
+    lblName: TLabel;
+    edtName: TEdit;
+    lblVorname: TLabel;
+    edtVorname: TEdit;
+    lblPLZ: TLabel;
+    edtPostleitzahl: TEdit;
+    lblWohnort: TLabel;
+    edtWohnort: TEdit;
+    lblHausnummer: TLabel;
+    edtHausnummer: TEdit;
+    lblEmail: TLabel;
+    edtEmail: TEdit;
+    lblTelefonnummer: TLabel;
+    Edit2: TEdit;
+    lblKundenformular: TLabel;
+    lblPDaten: TLabel;
+    pBoxFormular: TPaintBox;
+    PBoxPDaten: TPaintBox;
+    lblGeburtsdatum: TLabel;
+    DateTimePicker1: TDateTimePicker;
+    PBoxzwischenDatenundAdresse: TPaintBox;
+    lblAdresse: TLabel;
+    lblStrasse: TLabel;
+    EdtStrasse: TEdit;
+    PBoxUntenKunden: TPaintBox;
+    PBoxAdresse: TPaintBox;
+    btn_speichern_KdnForm: TButton;
+    btn_bearbeiten_KdnForm: TButton;
+    btn_Loeschen_KdnForm: TButton;
+  private
+    { Private-Deklarationen }
+  public
+    { Public-Deklarationen }
+  end;
+
+implementation
+
+{$R *.dfm}
+
+end.

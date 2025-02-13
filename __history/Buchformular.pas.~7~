@@ -1,0 +1,165 @@
+﻿unit Buchformular;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
+  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls;
+
+type
+  TBuchform = class(TFrame)
+    lblBuchformular: TLabel;
+    lblSprache: TLabel;
+    lblPlatznummer: TLabel;
+    lblRegal: TLabel;
+    lblAuflage: TLabel;
+    lblHerausgeber: TLabel;
+    lblAutor: TLabel;
+    lblISBN: TLabel;
+    lblGenre: TLabel;
+    lblName: TLabel;
+    EdtPublikationsjahr: TEdit;
+    EdtSeitenanzahl: TEdit;
+    EdtSprache: TEdit;
+    EdtPlatznummer: TEdit;
+    EdtRegal: TEdit;
+    EdtAuflage: TEdit;
+    EdtHerausgeber: TEdit;
+    EdtAutor: TEdit;
+    EdtIsbn: TEdit;
+    EdtGenre: TEdit;
+    EdtName: TEdit;
+    lblSeitenanzahl: TLabel;
+    lblPublikationsjahr: TLabel;
+    lbl: TLabel;
+    lblOptional: TLabel;
+    btnSpeichern: TButton;
+    btnbearbeiten: TButton;
+    btnLoeschen: TButton;
+  private
+    { Private-Deklarationen }
+  public
+    { Public-Deklarationen }
+  end;
+
+implementation
+
+{$R *.dfm}
+
+end.
+
+{// Pseudocode für das Buchformular (Anlegen/Bearbeiten)
+// Autor: Christian Fiedler
+
+MODULE Buchformular
+
+
+    // Gruppe: Physische Zuordnung
+    VARIABLE physischeZuordnung = {
+        "Regal": "",
+        "Platznummer": ""
+    }
+
+    // Gruppe: Optionale Felder
+    VARIABLE optionaleDaten = {
+        "Sprache": "",
+        "Seitenanzahl": "",
+        "Publikationsjahr": ""
+    }
+
+    // --- Initialisierung des Buchformulars ---
+    // modus: "Neu" oder "Bearbeiten"
+    FUNCTION InitializeBuchformular(modus)
+        IF modus == "Neu" THEN
+            CALL ClearFields(buchDetails)
+            CALL ClearFields(physischeZuordnung)
+            CALL ClearFields(optionaleDaten)
+        ELSE IF modus == "Bearbeiten" THEN
+            VARIABLE ausgewähltesBuch = GET SelectedBookFromList()
+            IF ausgewähltesBuch IS NULL THEN
+                CALL ShowError("Bitte wählen Sie ein Buch zur Bearbeitung aus.")
+                RETURN
+            END IF
+            // Lade die Buchdaten in die Eingabefelder
+            CALL LoadBuchDaten(ausgewähltesBuch, buchDetails, physischeZuordnung, optionaleDaten)
+        END IF
+
+        // Zeige das Buchformular an
+        CALL ShowForm("Buchformular")
+    END FUNCTION
+
+    // --- Validierung der Eingabefelder ---
+    FUNCTION ValidateBuchForm() RETURNS BOOLEAN
+        // Prüfe, ob alle Pflichtfelder gefüllt sind (Name, Genre, ISBN, Autor, Herausgeber, Auflage)
+        IF buchDetails["Name"] IS EMPTY OR buchDetails["Genre"] IS EMPTY OR buchDetails["ISBN"] IS EMPTY THEN
+            CALL ShowError("Bitte füllen Sie alle Pflichtfelder (Name, Genre, ISBN) aus.")
+            RETURN FALSE
+        END IF
+
+        // Beispielhafte Validierung des ISBN-Formats (vereinfachte Prüfung)
+        IF NOT IsValidISBN(buchDetails["ISBN"]) THEN
+            CALL ShowError("Die eingegebene ISBN entspricht nicht dem erwarteten Format.")
+            RETURN FALSE
+        END IF
+
+        // Weitere Validierungen (z. B. für optionale Felder) können hier ergänzt werden
+        RETURN TRUE
+    END FUNCTION
+
+    // --- Speichern der Buchdaten (Neuanlage oder Update) ---
+    FUNCTION SaveBuchForm()
+        // Validierung der Eingaben
+        IF NOT ValidateBuchForm() THEN
+            RETURN
+        END IF
+
+        // Zusammenführen der Daten aus allen Gruppen
+        VARIABLE buchDaten = Merge(buchDetails, physischeZuordnung, optionaleDaten)
+
+        // Bestimmen, ob es sich um ein neues Buch oder ein Update handelt
+        IF IsNewBook(buchDaten) THEN
+            CALL Database.AddBook(buchDaten)
+            CALL ShowMessage("Neues Buch wurde erfolgreich angelegt.")
+        ELSE
+            CALL Database.UpdateBook(buchDaten)
+            CALL ShowMessage("Buchdaten wurden erfolgreich aktualisiert.")
+        END IF
+
+        // Formular schließen und Buchliste aktualisieren
+        CALL CloseForm("Buchformular")
+        CALL RefreshBookList()
+    END FUNCTION
+
+    // --- Event-Handler für Buttons ---
+    FUNCTION OnSaveButtonClick()
+        CALL SaveBuchForm()
+    END FUNCTION
+
+    FUNCTION OnCancelButtonClick()
+        CALL CloseForm("Buchformular")
+    END FUNCTION
+
+    // --- Haupt-Einstiegspunkt für das Buchformular ---
+    FUNCTION MainBuchformular(modus)
+        CALL InitializeBuchformular(modus)
+        // Registriere Event-Handler für "Speichern" und "Abbrechen"
+        SET OnClick("SpeichernButton") TO OnSaveButtonClick
+        SET OnClick("AbbrechenButton") TO OnCancelButtonClick
+        // Starte die Event-Schleife für das Formular
+        CALL StartEventLoop()
+    END FUNCTION
+
+    // --- Hilfsfunktion: Prüft das ISBN-Format (vereinfachte Version) ---
+    FUNCTION IsValidISBN(isbn) RETURNS BOOLEAN
+        // Beispiel: Überprüfe, ob die ISBN eine Mindestlänge hat und nur Zahlen und Bindestriche enthält
+        IF Length(isbn) < 10 THEN
+            RETURN FALSE
+        END IF
+        IF NOT MatchesPattern(isbn, "[0-9\-]+") THEN
+            RETURN FALSE
+        END IF
+        RETURN TRUE
+    END FUNCTION
+
+END MODULE
+}

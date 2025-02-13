@@ -1,0 +1,17 @@
+program BuechereiVerwaltung;
+
+uses
+  Vcl.Forms,
+  MainFrame in 'MainFrame.pas' {Form1},
+  Kundenform in 'Kundenform.pas' {Frame2: TFrame},
+  Kundenverwaltung in 'Kundenverwaltung.pas' {Frame1: TFrame},
+  Main in 'Main.pas' {MainDashboard: TFrame};
+
+{$R *.res}
+
+begin
+  Application.Initialize;
+  Application.MainFormOnTaskbar := True;
+  Application.CreateForm(TForm1, Form1);
+  Application.Run;
+end.

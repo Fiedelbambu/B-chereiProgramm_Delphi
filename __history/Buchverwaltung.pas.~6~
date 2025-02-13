@@ -1,0 +1,57 @@
+unit Buchverwaltung;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
+  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Buchformular,
+  Vcl.ExtCtrls, Data.DB, Vcl.Grids, Vcl.DBGrids;
+
+type
+  TBuchverwalter = class(TFrame)
+    lblBuchverwaltung: TLabel;
+    btn_BuchAnlegen: TButton;
+    PaintBox1: TPaintBox;
+    lblName: TLabel;
+    lblGenre: TLabel;
+    lblISBN: TLabel;
+    lblAutor: TLabel;
+    lblHerausgeber: TLabel;
+    EdtName: TEdit;
+    EdtGenre: TEdit;
+    EdtISBN: TEdit;
+    EdtAutor: TEdit;
+    EdtHerausgeber: TEdit;
+    btnSuche: TButton;
+    lblSucherergebnisse: TLabel;
+    DBGrid1: TDBGrid;
+    procedure btn_BuchAnlegenClick(Sender: TObject);
+
+
+  private
+    { Private-Deklarationen }
+  public
+    { Public-Deklarationen }
+  end;
+
+implementation
+
+{$R *.dfm}
+
+uses
+MainFrame;
+
+
+
+
+procedure TBuchverwalter.btn_BuchAnlegenClick(Sender: TObject);
+begin
+  if Assigned(Form1) then
+    Form1.SwitchFrame('Buchverwalter');
+end;
+
+
+
+
+
+end.

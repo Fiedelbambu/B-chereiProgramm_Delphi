@@ -1,0 +1,30 @@
+unit Mahnungsformular;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
+  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls;
+
+type
+  TFrame3 = class(TFrame)
+    lblKundename: TLabel;
+    lblNameDemo: TLabel;
+    lblAusgelieheneBuecher: TLabel;
+    lblFris: TLabel;
+    lblBemerkung: TLabel;
+    lblAutomatischberechnet: TLabel;
+    lbl: TLabel;
+    btnMahnungsSenden: TButton;
+    ListBox1: TListBox;
+  private
+    { Private-Deklarationen }
+  public
+    { Public-Deklarationen }
+  end;
+
+implementation
+
+{$R *.dfm}
+
+end.
