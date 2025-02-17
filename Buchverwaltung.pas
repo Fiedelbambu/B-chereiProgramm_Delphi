@@ -4,8 +4,8 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
-  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Buchformular,
-  Vcl.ExtCtrls, Data.DB, Vcl.Grids, Vcl.DBGrids;
+  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
+  Vcl.ExtCtrls, Data.DB, Vcl.Grids, Vcl.DBGrids, Data.Win.ADODB, Buchformular;
 
 type
   TBuchverwalter = class(TFrame)
@@ -24,14 +24,26 @@ type
     EdtHerausgeber: TEdit;
     btnSuche: TButton;
     lblSucherergebnisse: TLabel;
+    ADOQuery1: TADOQuery;
     DBGrid1: TDBGrid;
     procedure btn_BuchAnlegenClick(Sender: TObject);
+    procedure FrameEnter(Sender: TObject);
 
+ private
 
-  private
     { Private-Deklarationen }
+    FADOQuery: TADOQuery;
+    FDataSource: TDataSource;
+    procedure LoadBooks;
+    procedure AdjustGridColumns;  // Hier deklarieren wir die Methode
+
+
   public
     { Public-Deklarationen }
+    property ADOQuery: TADOQuery read FADOQuery;
+    constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
+
   end;
 
 implementation
@@ -39,20 +51,105 @@ implementation
 {$R *.dfm}
 
 uses
-MainFrame;
+  MainFrame, DatenbankKonfig;
 
-
-
-
-procedure TBuchverwalter.btn_BuchAnlegenClick(Sender: TObject);
+constructor TBuchverwalter.Create(AOwner: TComponent);
 begin
-  if Assigned(Form1) then
-    Form1.SwitchFrame('Buchverwalter');
+  inherited Create(AOwner);
+  // Erstellen der Laufzeit-Query (unabhängig von der Design-Komponente ADOQuery1)
+  FADOQuery := TADOQuery.Create(Self);
+  FADOQuery.Name := 'ADOQueryBuchverwalter';
+  // Erstellen einer DataSource, die unsere Query als DataSet nutzt
+  FDataSource := TDataSource.Create(Self);
+  FDataSource.DataSet := FADOQuery;
+  // DBGrid1 an die DataSource binden
+  DBGrid1.DataSource := FDataSource;
+end;
+
+destructor TBuchverwalter.Destroy;
+begin
+  // Alle Komponenten, die mit Self als Owner erstellt wurden, werden automatisch freigegeben.
+  inherited Destroy;
 end;
 
 
+{ AdjustGridColumns passt die Breite der Spalten automatisch an die längsten Inhalte an }
+procedure TBuchverwalter.AdjustGridColumns;
+var
+  i, MaxWidth, TextWidth: Integer;
+  Column: TColumn;
+  bmp: TBitmap;
+  ds: TDataSet;
+begin
+  ds := DBGrid1.DataSource.DataSet;
+  if ds = nil then Exit;
 
+  // Erstelle ein temporäres Bitmap, um einen Canvas mit gültigem Handle zu bekommen
+  bmp := TBitmap.Create;
+  try
+    bmp.Canvas.Font := DBGrid1.Font;
+    for i := 0 to DBGrid1.Columns.Count - 1 do
+    begin
+      Column := DBGrid1.Columns[i];
+      // Starte mit der Breite der Überschrift + etwas Abstand
+      MaxWidth := bmp.Canvas.TextWidth(Column.Title.Caption) + 8;
+      ds.DisableControls;
+      try
+        ds.First;
+        while not ds.Eof do
+        begin
+          TextWidth := bmp.Canvas.TextWidth(VarToStr(Column.Field.AsString)) + 8;
+          if TextWidth > MaxWidth then
+            MaxWidth := TextWidth;
+          ds.Next;
+        end;
+      finally
+        ds.First;
+        ds.EnableControls;
+      end;
+      Column.Width := MaxWidth;
+    end;
+  finally
+    bmp.Free;
+  end;
+end;
 
+//FrameEnter in den Eigenschaften OnEnter hinzufügen damit die Datenbank geladen wird
+procedure TBuchverwalter.FrameEnter(Sender: TObject);
+begin
+  LoadBooks;
+end;
+
+{ LoadBooks weist zunächst die zentrale Connection zu,
+  öffnet die Query und passt dann die Spaltenbreiten an }
+procedure TBuchverwalter.LoadBooks;
+begin
+  if Assigned(Form1) and Assigned(Form1.DBKonfig) then
+  begin
+    FADOQuery.Connection := Form1.DBKonfig.ADOConnection;
+    FADOQuery.Close;
+    FADOQuery.SQL.Text :=
+      'SELECT book_id, name, genre, isbn, author, publisher, edition, shelf, position, language, pages, publication_year, inventory_number FROM books';
+    try
+      FADOQuery.Open;
+      AdjustGridColumns; // Automatisch die Spaltenbreiten anpassen
+    except
+      on E: Exception do
+        ShowMessage('Fehler beim Laden der Bücher: ' + E.Message);
+    end;
+  end
+  else
+    ShowMessage('DBKonfig oder Form1 nicht verfügbar.');
+end;
+
+procedure TBuchverwalter.btn_BuchAnlegenClick(Sender: TObject);
+begin
+  // Beim Klick wird zuerst versucht, die Bücher-Daten zu laden
+  LoadBooks;
+  // Anschließend erfolgt ein Frame-Wechsel.
+  // Achtung: SwitchFrame('Buchverwalter') erzeugt einen neuen Frame und gibt das aktuelle frei.
+  Form1.SwitchFrame('Buchverwalter');
+end;
 
 end.
 

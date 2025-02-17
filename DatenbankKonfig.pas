@@ -26,11 +26,13 @@ type
     EdtPasswort: TEdit;
 
     procedure btnTestVerbindungClick(Sender: TObject);
-    procedure btnSpeichernClick(Sender: TObject);
-  private
-    procedure LadeDatenbankKonfiguration;
-    procedure SpeichereDatenbankKonfiguration;
     function ErstelleConnectionString: string;
+    procedure btnSpeichernClick(Sender: TObject);
+
+  private
+    procedure SpeichereDatenbankKonfiguration;
+    procedure LadeDatenbankKonfiguration;
+
 
   public
     procedure InitializeConfig;

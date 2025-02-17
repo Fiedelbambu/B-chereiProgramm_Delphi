@@ -237,10 +237,6 @@ object Buchform: TBuchform
     TabOrder = 13
     OnClick = btnLoeschenClick
   end
-  object ADOConnection: TADOConnection
-    Left = 608
-    Top = 48
-  end
   object ADOQuery: TADOQuery
     Parameters = <>
     Left = 608

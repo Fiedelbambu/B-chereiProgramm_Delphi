@@ -42,17 +42,15 @@ type
     procedure btnAusleiheClick(Sender: TObject);
     procedure btnMahnungsverClick(Sender: TObject);
     procedure btnEinstellungenClick(Sender: TObject);
-
   private
     FCurrentFrame: TFrame;   // Referenz auf den aktuell angezeigten Frame
-    DBKonfig: TKonfig_Datenbank;  // 🔹 Datenbank-Konfigurationsobjekt hinzugefügt
-     procedure PrüfeDatenbankVerbindung;  // 🔹 Neue Methode für Datenbankprüfung
-
+    FDBKonfig: TKonfig_Datenbank;  // Zentrale DB-Konfiguration
+    procedure PrüfeDatenbankVerbindung;  // Prüft die Verbindung zur Datenbank
   public
-    // Diese Methode wechselt den Containerinhalt auf den Kundenform
+    property DBKonfig: TKonfig_Datenbank read FDBKonfig write FDBKonfig;
+    // Methode zum Framewechsel (hier wird ein neuer Frame erzeugt)
     procedure ShowKundenform;
     procedure SwitchFrame(FrameType: string);
-
   end;
 
 var
@@ -67,33 +65,30 @@ procedure TForm1.FormCreate(Sender: TObject);
 var
   Dashboard: TMainDashboard;
 begin
+  // Erstelle und zeige das Dashboard
   Dashboard := TMainDashboard.Create(Self);
   Dashboard.Parent := pnlContainer;
   Dashboard.Align := alClient;
   Dashboard.Visible := True;
   FCurrentFrame := Dashboard;
 
-   // 🔹 Datenbank-Konfiguration initialisieren
-  DBKonfig := TKonfig_Datenbank.Create(Self);
-  DBKonfig.InitializeConfig;
+  // Erstelle die zentrale DB-Konfiguration
+  FDBKonfig := TKonfig_Datenbank.Create(Self);
+  FDBKonfig.InitializeConfig;
 
-  // 🔹 Datenbankverbindung prüfen
+  // Prüfe die Datenbankverbindung (zeigt eine Meldung, falls Daten fehlen oder Fehler auftreten)
   PrüfeDatenbankVerbindung;
 end;
 
-
-//TTimer liefert die aktuelle Uhrzeit
 procedure TForm1.Timer1Timer(Sender: TObject);
 begin
   lblClock.Caption := FormatDateTime('hh:nn', Now);
 end;
 
-//HauptmenuButton oder BackButton
 procedure TForm1.btnAusleiheClick(Sender: TObject);
 var
-AusleiheFormular: TAusleiheFormular;
+  AusleiheFormular: TAusleiheFormular;
 begin
-   // Aktuellen Frame freigeben
   if Assigned(FCurrentFrame) then
   begin
     FCurrentFrame.Free;
@@ -106,40 +101,40 @@ begin
   FCurrentFrame := AusleiheFormular;
 end;
 
-
 procedure TForm1.PrüfeDatenbankVerbindung;
 begin
-  // 🔹 Prüfen, ob Anmeldedaten in der `dbconfig.ini` vorhanden sind
   if (DBKonfig.EdtServeradresse.Text = '') or (DBKonfig.EdtDb.Text = '') then
   begin
-    ShowMessage('⚠️ Fehlende Anmeldedaten!\nBitte geben Sie Server und Datenbank in den Einstellungen an.');
+    ShowMessage('⚠️ Fehlende Anmeldedaten!' + sLineBreak +
+                'Bitte geben Sie Server und Datenbank in den Einstellungen an.');
     Exit;
   end;
 
-  // 🔹 Falls Daten vorhanden sind, versuche Verbindung
   if DBKonfig.TesteDatenbankVerbindung then
     ShowMessage('✅ Verbindung zur Datenbank erfolgreich!')
   else
     ShowMessage('❌ Fehler beim Verbinden zur Datenbank.');
 end;
 
-
-
 procedure TForm1.btn_buecherClick(Sender: TObject);
 var
-Buchverwalter: TBuchverwalter;
+  Buchverwalter: TBuchverwalter;
 begin
-  // Aktuellen Frame freigeben
   if Assigned(FCurrentFrame) then
   begin
     FCurrentFrame.Free;
     FCurrentFrame := nil;
   end;
-  // Dashboard (TMainDashboard) erstellen und einbetten
+
+  // Erzeuge den Buchverwalter-Frame
   Buchverwalter := TBuchverwalter.Create(Self);
   Buchverwalter.Parent := pnlContainer;
   Buchverwalter.Align := alClient;
   Buchverwalter.Visible := True;
+
+  // Weisen der zentralen Connection aus DBKonfig an die ADOQuery im Buchverwalter
+  Buchverwalter.ADOQuery1.Connection := DBKonfig.ADOConnection;
+
   FCurrentFrame := Buchverwalter;
 end;
 
@@ -147,14 +142,11 @@ procedure TForm1.btn_HauptmanuClick(Sender: TObject);
 var
   Dashboard: TMainDashboard;
 begin
-  // Aktuellen Frame freigeben
   if Assigned(FCurrentFrame) then
   begin
     FCurrentFrame.Free;
     FCurrentFrame := nil;
   end;
-
-  // Dashboard (TMainDashboard) erstellen und einbetten
   Dashboard := TMainDashboard.Create(Self);
   Dashboard.Parent := pnlContainer;
   Dashboard.Align := alClient;
@@ -166,14 +158,11 @@ procedure TForm1.Button1Click(Sender: TObject);
 var
   KundenVerwaltungFrame: TFrame1;
 begin
-  // Aktuellen Frame freigeben
   if Assigned(FCurrentFrame) then
   begin
     FCurrentFrame.Free;
     FCurrentFrame := nil;
   end;
-
-  // TFrame1 (Kundenverwaltung) erstellen und einbetten
   KundenVerwaltungFrame := TFrame1.Create(Self);
   KundenVerwaltungFrame.Parent := pnlContainer;
   KundenVerwaltungFrame.Align := alClient;
@@ -183,32 +172,29 @@ end;
 
 procedure TForm1.btnEinstellungenClick(Sender: TObject);
 var
-Konfiguration: TKonfig;
-begin
-  if Assigned(FCurrentFrame) then
-  begin
-    FCurrentFrame.Free;
-    FCurrentFrame := nil;
- end;
-      // Dashboard (TMainDashboard) erstellen und einbetten
-  Konfiguration := TKonfig.Create(Self);
-  Konfiguration.Parent := pnlContainer;
-  Konfiguration.Align := alClient;
-  Konfiguration.Visible := True;
-  FCurrentFrame := Konfiguration;
-
-end;
-
-procedure TForm1.btnMahnungsverClick(Sender: TObject);
-var
-Mahungsverwalt: TMahungsverwalt;
+  Konfiguration: TKonfig;
 begin
   if Assigned(FCurrentFrame) then
   begin
     FCurrentFrame.Free;
     FCurrentFrame := nil;
   end;
-      // Dashboard (TMainDashboard) erstellen und einbetten
+  Konfiguration := TKonfig.Create(Self);
+  Konfiguration.Parent := pnlContainer;
+  Konfiguration.Align := alClient;
+  Konfiguration.Visible := True;
+  FCurrentFrame := Konfiguration;
+end;
+
+procedure TForm1.btnMahnungsverClick(Sender: TObject);
+var
+  Mahungsverwalt: TMahungsverwalt;
+begin
+  if Assigned(FCurrentFrame) then
+  begin
+    FCurrentFrame.Free;
+    FCurrentFrame := nil;
+  end;
   Mahungsverwalt := TMahungsverwalt.Create(Self);
   Mahungsverwalt.Parent := pnlContainer;
   Mahungsverwalt.Align := alClient;
@@ -216,8 +202,6 @@ begin
   FCurrentFrame := Mahungsverwalt;
 end;
 
-{ Öffentliche Methode, die den aktuellen Frame im Container durch den Kundenform-Frame (TFrame2) ersetzt }
-// Diese Methode wurde ersetzt durch SwitchFrame
 procedure TForm1.ShowKundenform;
 var
   KundenForm: TFrame2;
@@ -227,7 +211,6 @@ begin
     FCurrentFrame.Free;
     FCurrentFrame := nil;
   end;
-
   KundenForm := TFrame2.Create(Self);
   KundenForm.Parent := pnlContainer;
   KundenForm.Align := alClient;
@@ -252,7 +235,7 @@ begin
   else if FrameType = 'Kundenverwaltung' then
     NewFrame := TFrame1.Create(Self)
   else if FrameType = 'Buchverwalter' then
-    NewFrame := TBuchform.Create(Self)  // Hier neuen Fall hinzufügen
+    NewFrame := TBuchform.Create(Self)   // Hier wird TBuchform erstellt – achte auf den Namen!
   else
     Exit;
 
@@ -261,10 +244,6 @@ begin
   NewFrame.Visible := True;
   FCurrentFrame := NewFrame;
 end;
-
-
-
-
 
 end.
 

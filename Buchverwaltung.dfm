@@ -4,6 +4,7 @@ object Buchverwalter: TBuchverwalter
   Width = 640
   Height = 449
   TabOrder = 0
+  OnEnter = FrameEnter
   DesignSize = (
     640
     449)
@@ -134,7 +135,7 @@ object Buchverwalter: TBuchverwalter
   end
   object DBGrid1: TDBGrid
     Left = 0
-    Top = 256
+    Top = 282
     Width = 637
     Height = 120
     TabOrder = 7
@@ -143,5 +144,10 @@ object Buchverwalter: TBuchverwalter
     TitleFont.Height = -12
     TitleFont.Name = 'Segoe UI'
     TitleFont.Style = []
+  end
+  object ADOQuery1: TADOQuery
+    Parameters = <>
+    Left = 576
+    Top = 80
   end
 end
