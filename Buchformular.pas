@@ -4,24 +4,26 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
-  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Data.DB, Data.Win.ADODB, IniFiles;
+  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Data.DB, Data.Win.ADODB, IniFiles,
+   DatenbankKonfig;
 
 type
   // Record für Buchinformationen
-  TBuchDaten = record
-    ID: Integer;
-    Name: string;
-    Genre: string;
-    ISBN: string;
-    Autor: string;
-    Herausgeber: string;
-    Auflage: string;
-    Regal: string;
-    Platznummer: string;
-    Sprache: string;
-    Seitenanzahl: Integer;
-    Publikationsjahr: Integer;
-  end;
+ TBuchDaten = record
+  ID: Integer;               // Primärschlüssel (AUTO_INCREMENT) in DB
+  Name: string;
+  Genre: string;
+  ISBN: string;             // UNIQUE KEY in DB
+  Autor: string;            // => author
+  Herausgeber: string;      // => publisher
+  Auflage: string;          // => edition
+  Regal: string;            // => shelf
+  Platznummer: string;      // => position
+  Sprache: string;          // => language
+  Seitenanzahl: Integer;    // => pages
+  Publikationsjahr: Integer;// => publication_year
+end;
+
 
   // Frame für das Buchformular
   TBuchform = class(TFrame)
@@ -49,11 +51,11 @@ type
     btnSpeichern: TButton;
     btnBearbeiten: TButton;
     btnLoeschen: TButton;
-    ADOConnection: TADOConnection;
     ADOQuery: TADOQuery;
     procedure btnSpeichernClick(Sender: TObject);
     procedure btnBearbeitenClick(Sender: TObject);
     procedure btnLoeschenClick(Sender: TObject);
+
   private
     FBuchDaten: TBuchDaten;
     procedure LadeBuchDaten(const ABuchDaten: TBuchDaten);
@@ -106,9 +108,18 @@ begin
   EdtPublikationsjahr.Text := IntToStr(ABuchDaten.Publikationsjahr);
 end;
 
+{Es kann sinnvoll sein, eine zentrale DataModule-Unit zu verwenden,
+ in der der TADOConnection definiert und initialisiert wird.
+  So vermeidest du Mehrfachinitialisierungen und hast an einer
+  Stelle die komplette Kontrolle über die Datenbankverbindung.}
+
+
 // Speichern der Buchdaten
 procedure TBuchform.SpeichereBuchDaten;
 begin
+
+
+  // 1) Lokale Buchdaten aktualisieren
   FBuchDaten.Name := EdtName.Text;
   FBuchDaten.Genre := EdtGenre.Text;
   FBuchDaten.ISBN := EdtIsbn.Text;
@@ -121,10 +132,24 @@ begin
   FBuchDaten.Seitenanzahl := StrToIntDef(EdtSeitenanzahl.Text, 0);
   FBuchDaten.Publikationsjahr := StrToIntDef(EdtPublikationsjahr.Text, 0);
 
+  // 2) Query aus der INI laden
   ADOQuery.SQL.Text := LadeSQLQuery('InsertOrUpdate');
+  ADOQuery.Parameters.Refresh; // optional, aktualisiert die Param-Liste
+
+  // 3) Parameter mit Werten belegen
   ADOQuery.Parameters.ParamByName('Name').Value := FBuchDaten.Name;
-  ADOQuery.Parameters.ParamByName('genre').Value := FBuchDaten.Genre;
-  ADOQuery.Parameters.ParamByName('isbn').Value := FBuchDaten.ISBN;
+  ADOQuery.Parameters.ParamByName('Genre').Value := FBuchDaten.Genre;
+  ADOQuery.Parameters.ParamByName('ISBN').Value := FBuchDaten.ISBN;
+  ADOQuery.Parameters.ParamByName('Author').Value := FBuchDaten.Autor;
+  ADOQuery.Parameters.ParamByName('Publisher').Value := FBuchDaten.Herausgeber;
+  ADOQuery.Parameters.ParamByName('Edition').Value := FBuchDaten.Auflage;
+  ADOQuery.Parameters.ParamByName('Shelf').Value := FBuchDaten.Regal;
+  ADOQuery.Parameters.ParamByName('Position').Value := FBuchDaten.Platznummer;
+  ADOQuery.Parameters.ParamByName('Language').Value := FBuchDaten.Sprache;
+  ADOQuery.Parameters.ParamByName('Pages').Value := FBuchDaten.Seitenanzahl;
+  ADOQuery.Parameters.ParamByName('PublicationYear').Value := FBuchDaten.Publikationsjahr;
+
+  // 4) SQL ausführen => Fügt ein oder aktualisiert, je nach ISBN
   ADOQuery.ExecSQL;
 
   ShowMessage('Buchdaten gespeichert!');
