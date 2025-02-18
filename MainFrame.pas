@@ -111,7 +111,7 @@ begin
   end;
 
   if DBKonfig.TesteDatenbankVerbindung then
-    ShowMessage('✅ Verbindung zur Datenbank erfolgreich!')
+  //  ShowMessage('✅ Verbindung zur Datenbank erfolgreich!')
   else
     ShowMessage('❌ Fehler beim Verbinden zur Datenbank.');
 end;
@@ -222,6 +222,7 @@ procedure TForm1.SwitchFrame(FrameType: string);
 var
   NewFrame: TFrame;
 begin
+  // Alten Frame schließen
   if Assigned(FCurrentFrame) then
   begin
     FCurrentFrame.Free;
@@ -229,21 +230,39 @@ begin
   end;
 
   if FrameType = 'Kundenform' then
-    NewFrame := TFrame2.Create(Self)
+  begin
+    NewFrame := TFrame2.Create(Self);
+  end
   else if FrameType = 'Dashboard' then
-    NewFrame := TMainDashboard.Create(Self)
+  begin
+    NewFrame := TMainDashboard.Create(Self);
+  end
   else if FrameType = 'Kundenverwaltung' then
-    NewFrame := TFrame1.Create(Self)
+  begin
+    NewFrame := TFrame1.Create(Self);
+  end
   else if FrameType = 'Buchverwalter' then
-    NewFrame := TBuchform.Create(Self)   // Hier wird TBuchform erstellt – achte auf den Namen!
+  begin
+    // Frame erzeugen
+    NewFrame := TBuchform.Create(Self);
+    // Connection zuweisen
+    TBuchform(NewFrame).ADOQuery.Connection := DBKonfig.ADOConnection;
+  end
   else
+  begin
+    ShowMessage('Unbekannter FrameType: ' + FrameType);
     Exit;
+  end;
 
+  // Neuen Frame im Panel anzeigen
   NewFrame.Parent := pnlContainer;
   NewFrame.Align := alClient;
   NewFrame.Visible := True;
+
+  // Referenz merken
   FCurrentFrame := NewFrame;
 end;
+
 
 end.
 

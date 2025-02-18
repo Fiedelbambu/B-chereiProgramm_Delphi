@@ -1,17 +1,17 @@
 object Buchverwalter: TBuchverwalter
   Left = 0
   Top = 0
-  Width = 640
+  Width = 861
   Height = 449
   TabOrder = 0
   OnEnter = FrameEnter
   DesignSize = (
-    640
+    861
     449)
   object lblBuchverwaltung: TLabel
     Left = 0
     Top = 0
-    Width = 640
+    Width = 861
     Height = 37
     Align = alTop
     Alignment = taCenter
@@ -66,7 +66,7 @@ object Buchverwalter: TBuchverwalter
     Caption = 'Herausgeber : '
   end
   object lblSucherergebnisse: TLabel
-    Left = 3
+    Left = 33
     Top = 224
     Width = 167
     Height = 32
@@ -80,15 +80,18 @@ object Buchverwalter: TBuchverwalter
     Font.Style = []
     ParentFont = False
     Layout = tlCenter
+    ExplicitLeft = 3
   end
   object btn_BuchAnlegen: TButton
     Left = 264
     Top = 408
-    Width = 115
+    Width = 336
     Height = 25
+    Anchors = [akLeft, akRight]
     Caption = 'Neues Buch Anlegen'
     TabOrder = 0
     OnClick = btn_BuchAnlegenClick
+    ExplicitWidth = 115
   end
   object EdtName: TEdit
     Left = 128
@@ -132,22 +135,32 @@ object Buchverwalter: TBuchverwalter
     Height = 25
     Caption = 'Suchen'
     TabOrder = 6
+    OnClick = btnSucheClick
   end
   object DBGrid1: TDBGrid
+    AlignWithMargins = True
     Left = 0
-    Top = 282
-    Width = 637
+    Top = 280
+    Width = 858
     Height = 120
+    Anchors = [akLeft, akRight]
+    DataSource = DataSource1
     TabOrder = 7
     TitleFont.Charset = DEFAULT_CHARSET
     TitleFont.Color = clWindowText
     TitleFont.Height = -12
     TitleFont.Name = 'Segoe UI'
     TitleFont.Style = []
+    OnDblClick = DBGrid1DblClick
   end
   object ADOQuery1: TADOQuery
     Parameters = <>
     Left = 576
     Top = 80
+  end
+  object DataSource1: TDataSource
+    DataSet = ADOQuery1
+    Left = 576
+    Top = 144
   end
 end

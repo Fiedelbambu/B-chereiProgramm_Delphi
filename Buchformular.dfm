@@ -25,7 +25,7 @@ object Buchform: TBuchform
   end
   object lblSprache: TLabel
     Left = 46
-    Top = 323
+    Top = 334
     Width = 48
     Height = 15
     Caption = 'Sprache :'
@@ -147,68 +147,54 @@ object Buchform: TBuchform
     Height = 23
     TabOrder = 1
   end
-  object EdtSprache: TEdit
-    Left = 104
-    Top = 320
-    Width = 121
-    Height = 23
-    TabOrder = 2
-  end
   object EdtPlatznummer: TEdit
     Left = 432
     Top = 235
     Width = 121
     Height = 23
-    TabOrder = 3
+    TabOrder = 2
   end
   object EdtRegal: TEdit
     Left = 104
     Top = 232
     Width = 121
     Height = 23
-    TabOrder = 4
+    TabOrder = 3
   end
   object EdtAuflage: TEdit
     Left = 432
     Top = 141
     Width = 121
     Height = 23
-    TabOrder = 5
+    TabOrder = 4
   end
   object EdtHerausgeber: TEdit
     Left = 104
     Top = 141
     Width = 121
     Height = 23
-    TabOrder = 6
+    TabOrder = 5
   end
   object EdtAutor: TEdit
     Left = 432
     Top = 104
     Width = 121
     Height = 23
-    TabOrder = 7
+    TabOrder = 6
   end
   object EdtIsbn: TEdit
     Left = 104
     Top = 101
     Width = 121
     Height = 23
-    TabOrder = 8
-  end
-  object EdtGenre: TEdit
-    Left = 432
-    Top = 61
-    Width = 121
-    Height = 23
-    TabOrder = 9
+    TabOrder = 7
   end
   object EdtName: TEdit
     Left = 104
     Top = 61
     Width = 121
     Height = 23
-    TabOrder = 10
+    TabOrder = 8
   end
   object btnSpeichern: TButton
     Left = 104
@@ -216,7 +202,7 @@ object Buchform: TBuchform
     Width = 121
     Height = 25
     Caption = 'Speichern'
-    TabOrder = 11
+    TabOrder = 9
     OnClick = btnSpeichernClick
   end
   object btnbearbeiten: TButton
@@ -225,7 +211,7 @@ object Buchform: TBuchform
     Width = 121
     Height = 25
     Caption = 'Bearbeiten'
-    TabOrder = 12
+    TabOrder = 10
     OnClick = btnBearbeitenClick
   end
   object btnLoeschen: TButton
@@ -234,8 +220,64 @@ object Buchform: TBuchform
     Width = 121
     Height = 25
     Caption = 'L'#246'schen'
-    TabOrder = 13
+    TabOrder = 11
     OnClick = btnLoeschenClick
+  end
+  object CbxGenre: TComboBox
+    Left = 432
+    Top = 61
+    Width = 121
+    Height = 23
+    Style = csDropDownList
+    TabOrder = 12
+    Items.Strings = (
+      'Roman'
+      'Krimi'
+      'Sachbuch'
+      'Lustig'
+      'Fantasy'
+      'Thriller'
+      'Romantik'
+      'Erz'#228'hlungen'
+      'Kurzgeschichten'
+      'Dramen'
+      'Krimi'
+      'Science-Fiction'
+      'Biografie'
+      'Kinder- und Jugendb'#252'cher'
+      'Essays/Lyrik'
+      'Sachbuch/Ratgeber'
+      'Horror')
+  end
+  object CbxSprache: TComboBox
+    Left = 100
+    Top = 331
+    Width = 125
+    Height = 23
+    TabOrder = 13
+    Items.Strings = (
+      'Englisch'
+      'Deutsch'
+      'Spanisch'
+      'Franz'#246'sisch'
+      'Italienisch'
+      'Portugiesisch'
+      'Russisch'
+      'Chinesisch (Mandarin)'
+      'Japanisch'
+      'Arabisch'
+      'Hindi'
+      'Bengali'
+      'Koreanisch'
+      'T'#252'rkisch'
+      'Niederl'#228'ndisch'
+      'Schwedisch'
+      'Norwegisch'
+      'D'#228'nisch'
+      'Polnisch'
+      'Tschechisch'
+      'Russisch'
+      'Rum'#228'nisch')
   end
   object ADOQuery: TADOQuery
     Parameters = <>

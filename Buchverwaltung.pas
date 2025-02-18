@@ -26,24 +26,25 @@ type
     lblSucherergebnisse: TLabel;
     ADOQuery1: TADOQuery;
     DBGrid1: TDBGrid;
+    DataSource1: TDataSource;
+
     procedure btn_BuchAnlegenClick(Sender: TObject);
     procedure FrameEnter(Sender: TObject);
+    procedure btnSucheClick(Sender: TObject);
+    procedure DBGrid1DblClick(Sender: TObject);
 
- private
-
-    { Private-Deklarationen }
+  private
     FADOQuery: TADOQuery;
     FDataSource: TDataSource;
     procedure LoadBooks;
-    procedure AdjustGridColumns;  // Hier deklarieren wir die Methode
+    procedure AdjustGridColumns;
+    procedure ApplyLocalFilter;
 
 
   public
-    { Public-Deklarationen }
     property ADOQuery: TADOQuery read FADOQuery;
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
-
   end;
 
 implementation
@@ -53,27 +54,119 @@ implementation
 uses
   MainFrame, DatenbankKonfig;
 
+{ --- Konstruktor / Destructor --- }
+
 constructor TBuchverwalter.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  // Erstellen der Laufzeit-Query (unabhängig von der Design-Komponente ADOQuery1)
+  // Laufzeit-Query erstellen (unabhängig von ADOQuery1)
   FADOQuery := TADOQuery.Create(Self);
   FADOQuery.Name := 'ADOQueryBuchverwalter';
-  // Erstellen einer DataSource, die unsere Query als DataSet nutzt
+
+  // DataSource erzeugen
   FDataSource := TDataSource.Create(Self);
   FDataSource.DataSet := FADOQuery;
-  // DBGrid1 an die DataSource binden
+
+  // DBGrid an die DataSource binden
   DBGrid1.DataSource := FDataSource;
+
 end;
+
+
+
+procedure TBuchverwalter.DBGrid1DblClick(Sender: TObject);
+var
+  AusgewBuch: TBuchDaten;
+  BuchForm: TBuchform;
+begin
+  // Sicherstellen, dass die Query nicht leer ist
+  if FADOQuery.IsEmpty then
+  begin
+    ShowMessage('Keine Datensätze vorhanden!');
+    Exit;
+  end;
+
+  // Felder auslesen (Achtung: Passe die Feldnamen an deine DB an!)
+ // AusgewBuch.ID := FADOQuery.FieldByName('book_id').AsInteger;
+  AusgewBuch.Name := FADOQuery.FieldByName('name').AsString;
+  AusgewBuch.Genre := FADOQuery.FieldByName('genre').AsString;
+  AusgewBuch.ISBN := FADOQuery.FieldByName('isbn').AsString;
+  AusgewBuch.Autor := FADOQuery.FieldByName('author').AsString;
+ // AusgewBuch.Herausgeber := FADOQuery.FieldByName('publisher').AsString;
+  AusgewBuch.Auflage := FADOQuery.FieldByName('edition').AsString;
+  //AusgewBuch.Regal := FADOQuery.FieldByName(' shelf').AsString;
+ // AusgewBuch.Platznummer := FADOQuery.FieldByName(' position').AsString;
+ // AusgewBuch.Sprache := FADOQuery.FieldByName(' language').AsString;
+ // AusgewBuch.Seitenanzahl := FADOQuery.FieldByName(' pages').AsInteger;
+ // AusgewBuch.Publikationsjahr := FADOQuery.FieldByName(' publication_year').AsInteger;
+
+  // 1) Buchformular erstellen
+  BuchForm := TBuchform.Create(Self);
+
+  // 2) Connection für das Buchformular setzen (falls noch nicht passiert)
+  //    (Je nach Aufbau deines Projekts)
+  BuchForm.ADOQuery.Connection := Form1.DBKonfig.ADOConnection;
+
+  // 3) Buchdaten ins Formular laden
+  BuchForm.InitializeBuchformular(AusgewBuch);
+
+  // 4) Formular/Frame anzeigen (je nach Konzept)
+  //    Beispiel: Ein separates Form oder im selben Panel
+
+  // Form1.SwitchFrame('Buchformular');
+  // ... oder du fügst es als Child-Frame ein:
+  BuchForm.Parent := Self;  //Container
+  BuchForm.Align := alClient;
+  BuchForm.Visible := True;
+end;
+
 
 destructor TBuchverwalter.Destroy;
 begin
-  // Alle Komponenten, die mit Self als Owner erstellt wurden, werden automatisch freigegeben.
   inherited Destroy;
 end;
 
+{ --- Beim Betreten des Frames: Alle Datensätze laden --- }
+procedure TBuchverwalter.FrameEnter(Sender: TObject);
+begin
+  LoadBooks;
+end;
 
-{ AdjustGridColumns passt die Breite der Spalten automatisch an die längsten Inhalte an }
+{ --- Alle Datensätze laden (ohne WHERE) --- }
+procedure TBuchverwalter.LoadBooks;
+begin
+  if Assigned(Form1) and Assigned(Form1.DBKonfig) then
+  begin
+    FADOQuery.Connection := Form1.DBKonfig.ADOConnection;
+    FADOQuery.Close;
+    FADOQuery.SQL.Text :=
+  'SELECT ' +
+  '  name AS Name, ' +
+  '  genre AS Genre, ' +
+  '  isbn AS ISBN, ' +
+  '  author AS Author, ' +
+  '  publisher AS Herausgeber, ' +
+  '  edition AS Edition, ' +
+  '  shelf AS Regal, ' +
+  '  position AS Fach, ' +
+  '  language AS Sprache, ' +
+  '  pages AS Seitenanzahl, ' +
+  '  publication_year AS Veröffentlicht, ' +
+  '  inventory_number AS Inventarnummer ' +
+  'FROM books';
+ try
+      FADOQuery.Open;
+      AdjustGridColumns;
+    except
+      on E: Exception do
+        ShowMessage('Fehler beim Laden der Bücher: ' + E.Message);
+    end;
+  end
+  else
+    ShowMessage('DBKonfig oder Form1 nicht verfügbar.');
+end;
+
+{ --- Spaltenbreiten anpassen --- }
 procedure TBuchverwalter.AdjustGridColumns;
 var
   i, MaxWidth, TextWidth: Integer;
@@ -84,14 +177,12 @@ begin
   ds := DBGrid1.DataSource.DataSet;
   if ds = nil then Exit;
 
-  // Erstelle ein temporäres Bitmap, um einen Canvas mit gültigem Handle zu bekommen
   bmp := TBitmap.Create;
   try
     bmp.Canvas.Font := DBGrid1.Font;
     for i := 0 to DBGrid1.Columns.Count - 1 do
     begin
       Column := DBGrid1.Columns[i];
-      // Starte mit der Breite der Überschrift + etwas Abstand
       MaxWidth := bmp.Canvas.TextWidth(Column.Title.Caption) + 8;
       ds.DisableControls;
       try
@@ -114,41 +205,85 @@ begin
   end;
 end;
 
-//FrameEnter in den Eigenschaften OnEnter hinzufügen damit die Datenbank geladen wird
-procedure TBuchverwalter.FrameEnter(Sender: TObject);
-begin
-  LoadBooks;
-end;
-
-{ LoadBooks weist zunächst die zentrale Connection zu,
-  öffnet die Query und passt dann die Spaltenbreiten an }
-procedure TBuchverwalter.LoadBooks;
-begin
-  if Assigned(Form1) and Assigned(Form1.DBKonfig) then
-  begin
-    FADOQuery.Connection := Form1.DBKonfig.ADOConnection;
-    FADOQuery.Close;
-    FADOQuery.SQL.Text :=
-      'SELECT book_id, name, genre, isbn, author, publisher, edition, shelf, position, language, pages, publication_year, inventory_number FROM books';
-    try
-      FADOQuery.Open;
-      AdjustGridColumns; // Automatisch die Spaltenbreiten anpassen
-    except
-      on E: Exception do
-        ShowMessage('Fehler beim Laden der Bücher: ' + E.Message);
-    end;
-  end
-  else
-    ShowMessage('DBKonfig oder Form1 nicht verfügbar.');
-end;
-
+{ --- Button "Buch anlegen": neu laden + Frame-Wechsel --- }
 procedure TBuchverwalter.btn_BuchAnlegenClick(Sender: TObject);
+var
+  BuchForm: TBuchform;
 begin
-  // Beim Klick wird zuerst versucht, die Bücher-Daten zu laden
-  LoadBooks;
-  // Anschließend erfolgt ein Frame-Wechsel.
-  // Achtung: SwitchFrame('Buchverwalter') erzeugt einen neuen Frame und gibt das aktuelle frei.
+BuchForm := TBuchform.Create(Self);
   Form1.SwitchFrame('Buchverwalter');
+end;
+
+{ --- Button "Suche": Lokaler Filter auf Genre, Name, ISBN, Autor, Herausgeber --- }
+procedure TBuchverwalter.btnSucheClick(Sender: TObject);
+begin
+  if not FADOQuery.Active then
+    LoadBooks;
+
+  ApplyLocalFilter;
+end;
+// Fürs Debugen kann  ShowMessage(FADOQuery.SQL.Text); verwendet werden
+{ --- Lokaler Filter für Genre, Name, ISBN, Autor, Herausgeber --- }
+procedure TBuchverwalter.ApplyLocalFilter;
+var
+  FilterParts: TStringList;
+  sGenre, sName, sISBN, sAutor, sPublisher: string;
+  i: Integer;
+begin
+  // Werte holen
+  sGenre := Trim(EdtGenre.Text);
+  sName := Trim(EdtName.Text);
+  sISBN := Trim(EdtISBN.Text);
+  sAutor := Trim(EdtAutor.Text);
+  sPublisher := Trim(EdtHerausgeber.Text);
+
+  FADOQuery.DisableControls;
+  try
+    // Filter erst mal ausschalten
+    FADOQuery.Filtered := False;
+    FADOQuery.Filter := '';
+
+    FilterParts := TStringList.Create;
+    try
+      // Wenn Felder gefüllt, fügen wir LIKE-Bedingungen hinzu
+      if sGenre <> '' then
+        // Teiltreffer: genre LIKE '%sGenre%'
+        FilterParts.Add(Format('genre LIKE ''%%%s%%''', [sGenre]));
+
+      if sName <> '' then
+        FilterParts.Add(Format('name LIKE ''%%%s%%''', [sName]));
+
+      if sISBN <> '' then
+        FilterParts.Add(Format('isbn LIKE ''%%%s%%''', [sISBN]));
+
+      if sAutor <> '' then
+        FilterParts.Add(Format('author LIKE ''%%%s%%''', [sAutor]));
+
+      if sPublisher <> '' then
+        FilterParts.Add(Format('publisher LIKE ''%%%s%%''', [sPublisher]));
+
+      if FilterParts.Count > 0 then
+      begin
+        // Wir verbinden alle Teile mit " AND "
+        // (TStringList.Text würde Zeilenumbrüche einfügen, deshalb machen wir es manuell)
+        FADOQuery.Filter := FilterParts[0];
+        for i := 1 to FilterParts.Count - 1 do
+          FADOQuery.Filter := FADOQuery.Filter + ' AND ' + FilterParts[i];
+
+        FADOQuery.Filtered := True;
+      end
+      else
+      begin
+        // Keine Filter-Bedingungen => alle Datensätze anzeigen
+        FADOQuery.Filter := '';
+        FADOQuery.Filtered := False;
+      end;
+    finally
+      FilterParts.Free;
+    end;
+  finally
+    FADOQuery.EnableControls;
+  end;
 end;
 
 end.
@@ -179,49 +314,6 @@ MODULE Buchverwaltung
         CALL Buchformular.InitializeBuchformular("Bearbeiten", ausgewähltesBuch)
     END FUNCTION
 
-    // --- Teil 2: Buchsuche & Filter ---
-
-    // Deklaration der Suchfelder für Buchsuche
-    VARIABLE buchSuchFelder = {
-        "Name": "",
-        "Genre": "",
-        "ISBN": "",
-        "Autor": "",
-        "Herausgeber": ""
-    }
-
-    // DataGrid für die Anzeige der Suchergebnisse
-    VARIABLE buchDataGrid
-
-    // Initialisierung der Suchoberfläche
-    FUNCTION InitializeBuchsuche()
-        // Erstelle Suchfelder (Textfelder und Dropdowns) für die Kriterien
-        CALL CreateSearchField("BuchSuchFelder", buchSuchFelder)
-
-        // Erstelle ein DataGrid zur Darstellung der Suchergebnisse
-        buchDataGrid = CALL CreateDataGrid("BuchDataGrid")
-
-        // Registriere den Event-Handler für den Suchbutton
-        SET OnClick("BuchSuchenButton") TO FUNCTION() { ExecuteBuchSuche() }
-
-        // Registriere den Event-Handler für Doppelklick auf einen Eintrag im DataGrid
-        SET OnDoubleClick(buchDataGrid) TO FUNCTION() {
-            VARIABLE buch = GET SelectedRow(buchDataGrid)
-            CALL OpenBuchformularBearbeiten(buch)
-        }
-    END FUNCTION
-
-    // Funktion zum Ausführen der Buchsuche
-    FUNCTION ExecuteBuchSuche()
-        // Lese den Suchbegriff aus den Suchfeldern aus
-        VARIABLE suchQuery = BuildSearchQuery(buchSuchFelder)
-
-        // Rufe die Suchfunktion der Datenbank auf (Filterung nach Name, Genre, ISBN, etc.)
-        VARIABLE ergebnisse = Database.SearchBooks(suchQuery)
-
-        // Fülle das DataGrid mit den Suchergebnissen
-        CALL PopulateDataGrid(buchDataGrid, ergebnisse)
-    END FUNCTION
 
     // Funktion zum Aktualisieren der vollständigen Buchliste (z.B. nach Speichern)
     FUNCTION RefreshBuchList()
