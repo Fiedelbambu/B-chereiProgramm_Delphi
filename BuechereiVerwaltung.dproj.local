@@ -22,8 +22,8 @@
     <Transaction>1899.12.30 00:00:00.000.403,C:\dev_Delphi\Unit2.dfm=C:\dev_Delphi\BüchereiVerwaltung\Kundenform.dfm</Transaction>
     <Transaction>1899.12.30 00:00:00.000.916,C:\dev_Delphi\BüchereiVerwaltung\Unit3.pas=C:\dev_Delphi\BüchereiVerwaltung\Buchformular.pas</Transaction>
     <Transaction>1899.12.30 00:00:00.000.667,C:\dev_Delphi\BüchereiVerwaltung\Unit3.pas=C:\dev_Delphi\BüchereiVerwaltung\Main.pas</Transaction>
-    <Transaction>1899.12.30 00:00:00.000.808,=C:\dev_Delphi\BüchereiVerwaltung\Unit3.pas</Transaction>
-    <Transaction>1899.12.30 00:00:00.000.298,=C:\dev_Delphi\BüchereiVerwaltung\Unit3.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.945,=C:\dev_Delphi\BüchereiVerwaltung\Unit3.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.467,=C:\dev_Delphi\BüchereiVerwaltung\Unit3.pas</Transaction>
     <Transaction>1899.12.30 00:00:00.000.187,C:\dev_Delphi\BüchereiVerwaltung\Unit3.pas=C:\dev_Delphi\BüchereiVerwaltung\Buchverwaltung.pas</Transaction>
     <Transaction>1899.12.30 00:00:00.000.655,C:\dev_Delphi\BüchereiVerwaltung\Mahnungsverwaltung.dfm=C:\dev_Delphi\BüchereiVerwaltung\Unit3.dfm</Transaction>
     <Transaction>1899.12.30 00:00:00.000.509,=C:\dev_Delphi\Unit2.pas</Transaction>
@@ -33,10 +33,10 @@
     <Transaction>1899.12.30 00:00:00.000.872,C:\dev_Delphi\BüchereiVerwaltung\Ausleihform.pas=C:\dev_Delphi\BüchereiVerwaltung\Unit3.pas</Transaction>
     <Transaction>1899.12.30 00:00:00.000.616,C:\dev_Delphi\Unit1.pas=C:\dev_Delphi\BüchereiVerwaltung\MainFrame.pas</Transaction>
     <Transaction>1899.12.30 00:00:00.000.445,=C:\dev_Delphi\Unit1.pas</Transaction>
-    <Transaction>1899.12.30 00:00:00.000.945,=C:\dev_Delphi\BüchereiVerwaltung\Unit3.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.640,=C:\dev_Delphi\BüchereiVerwaltung\Unit3.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.298,=C:\dev_Delphi\BüchereiVerwaltung\Unit3.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.808,=C:\dev_Delphi\BüchereiVerwaltung\Unit3.pas</Transaction>
     <Transaction>1899.12.30 00:00:00.000.907,=C:\dev_Delphi\BüchereiVerwaltung\Unit3.pas</Transaction>
     <Transaction>1899.12.30 00:00:00.000.753,=C:\dev_Delphi\BüchereiVerwaltung\Unit3.pas</Transaction>
-    <Transaction>1899.12.30 00:00:00.000.640,=C:\dev_Delphi\BüchereiVerwaltung\Unit3.pas</Transaction>
-    <Transaction>1899.12.30 00:00:00.000.467,=C:\dev_Delphi\BüchereiVerwaltung\Unit3.pas</Transaction>
   </Transactions>
 </BorlandProject>

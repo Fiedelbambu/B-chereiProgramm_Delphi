@@ -5,9 +5,11 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Data.DB, Vcl.Grids,
-  Vcl.DBGrids, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.WinXCtrls;
+  Vcl.DBGrids, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.WinXCtrls,
+  Data.Win.ADODB; // Für TADOQuery und TDataSource
 
 type
+  // Du kannst TFrame1 umbenennen, z.B. in TKundenverwalter, falls gewünscht
   TFrame1 = class(TFrame)
     lblKundenverwaltung: TLabel;
     PaintBox1: TPaintBox;
@@ -21,166 +23,143 @@ type
     btn_KundenAnlegen: TButton;
     SBoxKundenverwaltung: TSearchBox;
     procedure btn_KundenAnlegenClick(Sender: TObject);
+    procedure FrameEnter(Sender: TObject); // <-- Für das automatische Laden
   private
     { Private-Deklarationen }
+    FADOQuery: TADOQuery;      // Laufzeit-Query
+    FDataSource: TDataSource;  // DataSource für DBGrid
+
+    procedure LoadCustomers;   // Daten laden
+    procedure AdjustGridColumns; // Spaltenbreiten anpassen
+
   public
     { Public-Deklarationen }
+    constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
   end;
-
-var
-  KundenverwaltungFrame: TFrame1;
 
 implementation
 
 {$R *.dfm}
 
 uses
-  MainFrame;  // Zugriff auf Form1 und dessen öffentliche Methode ShowKundenform
+  MainFrame, DatenbankKonfig; // Für Form1 und DBKonfig
 
+{ TFrame1 }
+
+// Konstruktor: Laufzeit-Query & DataSource erstellen
+constructor TFrame1.Create(AOwner: TComponent);
+begin
+  inherited Create(AOwner);
+
+  FADOQuery := TADOQuery.Create(Self);
+  FADOQuery.Name := 'ADOQueryKunden'; // optional
+
+  FDataSource := TDataSource.Create(Self);
+  FDataSource.DataSet := FADOQuery;
+
+  DBGrid1.DataSource := FDataSource;
+
+  // Falls du Teiltreffer in Delphi-Filtern brauchst:
+  // FADOQuery.FilterOptions := [foCaseInsensitive];
+end;
+
+// Destruktor: Alles wird vom Owner (Self) automatisch freigegeben
+destructor TFrame1.Destroy;
+begin
+  inherited Destroy;
+end;
+
+// Wird aufgerufen, wenn du im Designer OnEnter = FrameEnter verknüpft hast
+procedure TFrame1.FrameEnter(Sender: TObject);
+begin
+  LoadCustomers;
+end;
+
+// Laden der Kundendaten aus Tabelle "customers"
+procedure TFrame1.LoadCustomers;
+begin
+  if Assigned(Form1) and Assigned(Form1.DBKonfig) then
+  begin
+    FADOQuery.Connection := Form1.DBKonfig.ADOConnection;
+    FADOQuery.Close;
+    // Aliasnamen für deutsche Spaltenbezeichnungen
+    FADOQuery.SQL.Text :=
+      'SELECT ' +
+      '  first_name AS Name, ' +
+      '  last_name AS Familienname, ' +
+      '  email AS "E-Mail", ' +       // Anführungszeichen nötig, wenn du Sonderzeichen wie "-" nutzen willst
+      '  phone AS Telefon, ' +
+      '  birth_date AS Geburtsdatum, ' +
+      '  street AS Straße, ' +
+      '  postal_code AS Postleitzahl, ' +
+      '  city AS Stadt ' +
+      'FROM customers';
+
+    try
+      FADOQuery.Open;
+      AdjustGridColumns;
+    except
+      on E: Exception do
+        ShowMessage('Fehler beim Laden der Kunden: ' + E.Message);
+    end;
+  end
+  else
+    ShowMessage('DBKonfig oder Form1 nicht verfügbar.');
+end;
+
+// Spaltenbreiten anpassen (wie in Buchverwaltung)
+procedure TFrame1.AdjustGridColumns;
+var
+  i, MaxWidth, TextWidth: Integer;
+  Column: TColumn;
+  bmp: TBitmap;
+  ds: TDataSet;
+begin
+  ds := DBGrid1.DataSource.DataSet;
+  if ds = nil then Exit;
+
+  bmp := TBitmap.Create;
+  try
+    bmp.Canvas.Font := DBGrid1.Font;
+
+    for i := 0 to DBGrid1.Columns.Count - 1 do
+    begin
+      Column := DBGrid1.Columns[i];
+      // Mindestbreite = Breite des Spaltentitels + 8
+      MaxWidth := bmp.Canvas.TextWidth(Column.Title.Caption) + 8;
+
+      ds.DisableControls;
+      try
+        ds.First;
+        while not ds.Eof do
+        begin
+          TextWidth := bmp.Canvas.TextWidth(VarToStr(Column.Field.AsString)) + 8;
+          if TextWidth > MaxWidth then
+            MaxWidth := TextWidth;
+          ds.Next;
+        end;
+      finally
+        ds.First;
+        ds.EnableControls;
+      end;
+
+      Column.Width := MaxWidth;
+    end;
+  finally
+    bmp.Free;
+  end;
+end;
+
+// Button-Klick: Kunde anlegen (z. B. neues Kundenformular)
 procedure TFrame1.btn_KundenAnlegenClick(Sender: TObject);
 begin
+  // Falls du ein separates Formular/Frame für "Kunden anlegen" hast:
+  // Form1.SwitchFrame('KundenAnlegen') oder so.
+  // Oder du rufst eine Prozedur "ShowKundenform" auf:
   if Assigned(Form1) then
     Form1.ShowKundenform;
 end;
 
 end.
-
-
-
-{// Pseudocode für Modul 2: Kundenverwaltung
-// Autor: Christian Fiedler
-
-MODULE Kundenverwaltung
-
-    // --- Deklaration der UI-Komponenten ---
-    // Kundenformular (für Anlegen/Bearbeiten)
-    VARIABLE kundenForm  // Form mit Eingabefeldern: Name, Vorname, E-Mail, Telefonnummer, Geburtsdatum, Adresse, etc.
-    VARIABLE inputFelder = {
-        "Name": "",
-        "Vorname": "",
-        "Email": "",
-        "Telefonnummer": "",
-        "Geburtsdatum": "",
-        "Straße": "",
-        "PLZ": "",
-        "Ort": ""
-    }
-
-    // Suchbereich und Datenanzeige
-    VARIABLE kundenSuchfeld  // Textfeld für Suchanfragen (z.B. nach Name oder Kundennummer)
-    VARIABLE kundenDataGrid  // DataGrid oder ListView zur Anzeige der Kundendaten
-
-    // --- Initialisierung der Kundenverwaltung ---
-    FUNCTION InitializeKundenUI()
-        // Erstelle und konfiguriere das Kundenformular
-        CALL CreateForm("Kundenformular", inputFelder)
-
-        // Erstelle das Suchfeld und das DataGrid für die Kundensuche
-        CALL CreateSearchField("KundenSuchfeld")
-        CALL CreateDataGrid("KundenDataGrid")
-
-        // Registriere Event-Handler für Formular-Buttons
-        SET OnClick("SpeichernButton") TO SaveKunde
-        SET OnClick("BearbeitenButton") TO OpenKundenformular("Bearbeiten")
-        SET OnClick("LöschenButton") TO DeleteKunde
-
-        // Registriere Event-Handler für den Suchbutton
-        SET OnClick("SuchenButton") TO SearchKunden
-
-        // Button „Neuen Kunden anlegen“ in der Übersicht
-        SET OnClick("NeuenKundenButton") TO OpenKundenformular("Neu")
-    END FUNCTION
-
-    // --- Öffnen des Kundenformulars ---
-    // modus kann "Neu" oder "Bearbeiten" sein
-    FUNCTION OpenKundenformular(modus)
-        IF modus == "Neu" THEN
-            // Leere alle Eingabefelder
-            CALL ClearInputFields(inputFelder)
-        ELSE IF modus == "Bearbeiten" THEN
-            VARIABLE ausgewählterKunde = GET SelectedRow(kundenDataGrid)
-            IF ausgewählterKunde IS NOT NULL THEN
-                // Lade die Daten des ausgewählten Kunden in das Formular
-                CALL LoadKundenDaten(ausgewählterKunde, inputFelder)
-            ELSE
-                CALL ShowError("Bitte wählen Sie einen Kunden aus, um ihn zu bearbeiten.")
-                RETURN
-            END IF
-        END IF
-        // Zeige das Kundenformular an
-        CALL ShowForm("Kundenformular")
-    END FUNCTION
-
-    // --- Speichern von Kundendaten (Neuanlage oder Bearbeitung) ---
-    FUNCTION SaveKunde()
-        // Validierung der Eingaben (z. B. Pflichtfelder, E-Mail-Format)
-        IF NOT ValidateKundenInput(inputFelder) THEN
-            CALL ShowError("Ungültige Eingaben. Bitte überprüfen Sie alle Pflichtfelder.")
-            RETURN
-        END IF
-
-        // Bestimmen, ob es sich um einen neuen Kunden oder eine Bearbeitung handelt
-        IF IsNewCustomer(inputFelder) THEN
-            CALL Database.AddCustomer(GetInputData(inputFelder))
-        ELSE
-            CALL Database.UpdateCustomer(GetInputData(inputFelder))
-        END IF
-
-        CALL ShowMessage("Kundendaten wurden erfolgreich gespeichert.")
-        CALL RefreshKundenDataGrid()
-        CALL CloseForm("Kundenformular")
-    END FUNCTION
-
-    // --- Löschen eines Kunden ---
-    FUNCTION DeleteKunde()
-        VARIABLE ausgewählterKunde = GET SelectedRow(kundenDataGrid)
-        IF ausgewählterKunde IS NULL THEN
-            CALL ShowError("Bitte wählen Sie einen Kunden zum Löschen aus.")
-            RETURN
-        END IF
-        // Bestätigungsabfrage (optional)
-        IF Confirm("Soll der Kunde wirklich gelöscht werden?") THEN
-            CALL Database.DeleteCustomer(ausgewählterKunde.id)
-            CALL ShowMessage("Kunde wurde gelöscht.")
-            CALL RefreshKundenDataGrid()
-        END IF
-    END FUNCTION
-
-    // --- Suchen von Kunden ---
-    FUNCTION SearchKunden()
-        VARIABLE suchQuery = GET TextFrom("KundenSuchfeld")
-        VARIABLE ergebnisse = CALL Database.SearchCustomer(suchQuery)
-        CALL PopulateDataGrid(kundenDataGrid, ergebnisse)
-    END FUNCTION
-
-    // --- Aktualisieren der Kundenübersicht ---
-    FUNCTION RefreshKundenDataGrid()
-        VARIABLE alleKunden = CALL Database.GetAllCustomers()
-        CALL PopulateDataGrid(kundenDataGrid, alleKunden)
-    END FUNCTION
-
-    // --- Validierung der Eingabefelder im Kundenformular ---
-    FUNCTION ValidateKundenInput(felder)
-        // Beispiel: Überprüfe, ob Name, Vorname und E-Mail gefüllt sind
-        IF felder["Name"] IS EMPTY OR felder["Vorname"] IS EMPTY THEN
-            RETURN FALSE
-        END IF
-        // Überprüfe das E-Mail-Format (vereinfachte Prüfung)
-        IF NOT Contains(felder["Email"], "@") THEN
-            RETURN FALSE
-        END IF
-        // Weitere Validierungen können hier hinzugefügt werden
-        RETURN TRUE
-    END FUNCTION
-
-    // --- Hauptfunktion des Kundenverwaltungsmoduls ---
-    FUNCTION MainKundenverwaltung()
-        CALL InitializeKundenUI()
-        CALL RefreshKundenDataGrid()
-        // Starte die Event-Schleife für die Kundenverwaltung
-        CALL StartEventLoop()
-    END FUNCTION
-
-END MODULE
-}
 

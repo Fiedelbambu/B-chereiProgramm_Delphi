@@ -110,8 +110,7 @@ begin
   // 3) Buchdaten ins Formular laden
   BuchForm.InitializeBuchformular(AusgewBuch);
 
-  // 4) Formular/Frame anzeigen (je nach Konzept)
-  //    Beispiel: Ein separates Form oder im selben Panel
+  // 4) Formular/Frame anzeigen
 
   // Form1.SwitchFrame('Buchformular');
   // ... oder du fügst es als Child-Frame ein:

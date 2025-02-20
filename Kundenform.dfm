@@ -4,6 +4,9 @@ object Frame2: TFrame2
   Width = 640
   Height = 450
   TabOrder = 0
+  DesignSize = (
+    640
+    450)
   object lblName: TLabel
     Left = 3
     Top = 139
@@ -74,6 +77,7 @@ object Frame2: TFrame2
     Top = 71
     Width = 192
     Height = 32
+    Anchors = [akLeft, akRight]
     Caption = 'Pers'#246'nliche Daten'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -122,6 +126,7 @@ object Frame2: TFrame2
     Top = 279
     Width = 83
     Height = 32
+    Anchors = [akLeft, akRight]
     Caption = 'Adresse'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -148,6 +153,13 @@ object Frame2: TFrame2
     Top = 310
     Width = 639
     Height = 15
+  end
+  object lbl_KundenNr: TLabel
+    Left = 288
+    Top = 224
+    Width = 57
+    Height = 15
+    Caption = 'KundenNr.'
   end
   object edtName: TEdit
     Left = 96
@@ -191,7 +203,7 @@ object Frame2: TFrame2
     Height = 23
     TabOrder = 5
   end
-  object Edit2: TEdit
+  object edtTelefon: TEdit
     Left = 96
     Top = 224
     Width = 186
@@ -221,6 +233,7 @@ object Frame2: TFrame2
     Height = 25
     Caption = 'Speichern'
     TabOrder = 9
+    OnClick = btn_speichern_KdnFormClick
   end
   object btn_bearbeiten_KdnForm: TButton
     Left = 240
@@ -237,5 +250,15 @@ object Frame2: TFrame2
     Height = 25
     Caption = 'L'#246'schen'
     TabOrder = 11
+  end
+  object EdtKundenNr: TEdit
+    Left = 361
+    Top = 224
+    Width = 186
+    Height = 23
+    Anchors = [akLeft, akRight]
+    NumbersOnly = True
+    TabOrder = 12
+    OnEnter = EdtKundenNrEnter
   end
 end

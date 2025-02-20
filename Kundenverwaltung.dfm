@@ -1,13 +1,15 @@
 object Frame1: TFrame1
   Left = 0
   Top = 0
-  Width = 640
+  Width = 725
   Height = 475
+  Anchors = [akLeft, akRight]
   TabOrder = 0
+  OnEnter = FrameEnter
   object lblKundenverwaltung: TLabel
     Left = 0
     Top = 0
-    Width = 640
+    Width = 725
     Height = 37
     Align = alTop
     Alignment = taCenter
@@ -82,7 +84,7 @@ object Frame1: TFrame1
   object DBGrid1: TDBGrid
     Left = 0
     Top = 201
-    Width = 637
+    Width = 722
     Height = 176
     TabOrder = 1
     TitleFont.Charset = DEFAULT_CHARSET

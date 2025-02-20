@@ -71,7 +71,7 @@ object Buchverwalter: TBuchverwalter
     Width = 167
     Height = 32
     Alignment = taCenter
-    Anchors = [akTop, akBottom]
+    Anchors = [akLeft, akRight]
     Caption = 'Suchergebnisse'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -80,7 +80,6 @@ object Buchverwalter: TBuchverwalter
     Font.Style = []
     ParentFont = False
     Layout = tlCenter
-    ExplicitLeft = 3
   end
   object btn_BuchAnlegen: TButton
     Left = 264
@@ -91,7 +90,6 @@ object Buchverwalter: TBuchverwalter
     Caption = 'Neues Buch Anlegen'
     TabOrder = 0
     OnClick = btn_BuchAnlegenClick
-    ExplicitWidth = 115
   end
   object EdtName: TEdit
     Left = 128
