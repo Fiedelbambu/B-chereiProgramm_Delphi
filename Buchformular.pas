@@ -39,19 +39,19 @@ end;
     lblName: TLabel;
     EdtPublikationsjahr: TEdit;
     EdtSeitenanzahl: TEdit;
-    EdtSprache: TEdit;
     EdtPlatznummer: TEdit;
     EdtRegal: TEdit;
     EdtAuflage: TEdit;
     EdtHerausgeber: TEdit;
     EdtAutor: TEdit;
     EdtIsbn: TEdit;
-    EdtGenre: TEdit;
     EdtName: TEdit;
     btnSpeichern: TButton;
     btnBearbeiten: TButton;
     btnLoeschen: TButton;
     ADOQuery: TADOQuery;
+    CbxGenre: TComboBox;
+    CbxSprache: TComboBox;
     procedure btnSpeichernClick(Sender: TObject);
     procedure btnBearbeitenClick(Sender: TObject);
     procedure btnLoeschenClick(Sender: TObject);
@@ -96,14 +96,14 @@ end;
 procedure TBuchform.LadeBuchDaten(const ABuchDaten: TBuchDaten);
 begin
   EdtName.Text := ABuchDaten.Name;
-  EdtGenre.Text := ABuchDaten.Genre;
+  CbxGenre.Text := ABuchDaten.Genre;
   EdtIsbn.Text := ABuchDaten.ISBN;
   EdtAutor.Text := ABuchDaten.Autor;
   EdtHerausgeber.Text := ABuchDaten.Herausgeber;
   EdtAuflage.Text := ABuchDaten.Auflage;
   EdtRegal.Text := ABuchDaten.Regal;
   EdtPlatznummer.Text := ABuchDaten.Platznummer;
-  EdtSprache.Text := ABuchDaten.Sprache;
+  CbxSprache.Text := ABuchDaten.Sprache;
   EdtSeitenanzahl.Text := IntToStr(ABuchDaten.Seitenanzahl);
   EdtPublikationsjahr.Text := IntToStr(ABuchDaten.Publikationsjahr);
 end;
@@ -117,26 +117,35 @@ end;
 // Speichern der Buchdaten
 procedure TBuchform.SpeichereBuchDaten;
 begin
-
-
-  // 1) Lokale Buchdaten aktualisieren
+  // Lokale Buchdaten aus Edit-Feldern übernehmen
   FBuchDaten.Name := EdtName.Text;
-  FBuchDaten.Genre := EdtGenre.Text;
+  FBuchDaten.Genre := CbxGenre.Text;
   FBuchDaten.ISBN := EdtIsbn.Text;
   FBuchDaten.Autor := EdtAutor.Text;
   FBuchDaten.Herausgeber := EdtHerausgeber.Text;
   FBuchDaten.Auflage := EdtAuflage.Text;
   FBuchDaten.Regal := EdtRegal.Text;
   FBuchDaten.Platznummer := EdtPlatznummer.Text;
-  FBuchDaten.Sprache := EdtSprache.Text;
+  FBuchDaten.Sprache := CbxSprache.Text;
   FBuchDaten.Seitenanzahl := StrToIntDef(EdtSeitenanzahl.Text, 0);
   FBuchDaten.Publikationsjahr := StrToIntDef(EdtPublikationsjahr.Text, 0);
 
-  // 2) Query aus der INI laden
-  ADOQuery.SQL.Text := LadeSQLQuery('InsertOrUpdate');
-  ADOQuery.Parameters.Refresh; // optional, aktualisiert die Param-Liste
+  // 1) ADOQuery.Connection muss auf die zentrale ADOConnection zeigen
+  // z. B.:
+  // ADOQuery.Connection := Form1.DBKonfig.ADOConnection;
+  // oder, falls du eine globale Connection hast
 
-  // 3) Parameter mit Werten belegen
+  // 2) SQL direkt setzen (ohne ini)
+  ADOQuery.SQL.Text :=
+    'INSERT INTO books ' +
+    '(name, genre, isbn, author, publisher, edition, shelf, position, language, pages, publication_year) ' +
+    'VALUES ' +
+    '(:Name, :Genre, :ISBN, :Author, :Publisher, :Edition, :Shelf, :Position, :Language, :Pages, :PublicationYear) ' +
+    'ON DUPLICATE KEY UPDATE ' +
+    'name=:Name, genre=:Genre, author=:Author, publisher=:Publisher, edition=:Edition, shelf=:Shelf, ' +
+    'position=:Position, language=:Language, pages=:Pages, publication_year=:PublicationYear';
+
+  // 3) Parameter belegen
   ADOQuery.Parameters.ParamByName('Name').Value := FBuchDaten.Name;
   ADOQuery.Parameters.ParamByName('Genre').Value := FBuchDaten.Genre;
   ADOQuery.Parameters.ParamByName('ISBN').Value := FBuchDaten.ISBN;
@@ -149,7 +158,7 @@ begin
   ADOQuery.Parameters.ParamByName('Pages').Value := FBuchDaten.Seitenanzahl;
   ADOQuery.Parameters.ParamByName('PublicationYear').Value := FBuchDaten.Publikationsjahr;
 
-  // 4) SQL ausführen => Fügt ein oder aktualisiert, je nach ISBN
+  // 4) Ausführen
   ADOQuery.ExecSQL;
 
   ShowMessage('Buchdaten gespeichert!');
