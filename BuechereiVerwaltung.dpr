@@ -13,7 +13,8 @@ uses
   Konfiguration in 'Konfiguration.pas' {Konfig: TFrame},
   DatenbankKonfig in 'DatenbankKonfig.pas' {Konfig_Datenbank: TFrame},
   MailKonfig in 'MailKonfig.pas' {Konfig_Mail: TFrame},
-  Mahnungsformular in 'Mahnungsformular.pas' {Frame3: TFrame};
+  Mahnungsformular in 'Mahnungsformular.pas' {Frame3: TFrame},
+  AusleiheDialog in 'AusleiheDialog.pas' {AusleihDialog: TFrame};
 
 {$R *.res}
 
@@ -21,5 +22,6 @@ begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
   Application.CreateForm(TForm1, Form1);
+  //  Application.CreateForm(TAusleiheDialogForm, AusleiheDialogForm);
   Application.Run;
 end.

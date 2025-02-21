@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
-  Vcl.ExtCtrls, Data.DB, Vcl.Grids, Vcl.DBGrids, Data.Win.ADODB, Buchformular;
+  Vcl.ExtCtrls,AusleiheDialog,Ausleihform, Data.DB, Vcl.Grids, Vcl.DBGrids, Data.Win.ADODB, Buchformular;
 
 type
   TBuchverwalter = class(TFrame)
@@ -74,49 +74,23 @@ end;
 
 
 
+
 procedure TBuchverwalter.DBGrid1DblClick(Sender: TObject);
 var
-  AusgewBuch: TBuchDaten;
-  BuchForm: TBuchform;
+  SelectedBookName: string;
 begin
-  // Sicherstellen, dass die Query nicht leer ist
-  if FADOQuery.IsEmpty then
-  begin
-    ShowMessage('Keine Datensätze vorhanden!');
+  if (DBGrid1.DataSource = nil) or DBGrid1.DataSource.DataSet.IsEmpty then
     Exit;
-  end;
 
-  // Felder auslesen (Achtung: Passe die Feldnamen an deine DB an!)
- // AusgewBuch.ID := FADOQuery.FieldByName('book_id').AsInteger;
-  AusgewBuch.Name := FADOQuery.FieldByName('name').AsString;
-  AusgewBuch.Genre := FADOQuery.FieldByName('genre').AsString;
-  AusgewBuch.ISBN := FADOQuery.FieldByName('isbn').AsString;
-  AusgewBuch.Autor := FADOQuery.FieldByName('author').AsString;
- // AusgewBuch.Herausgeber := FADOQuery.FieldByName('publisher').AsString;
-  AusgewBuch.Auflage := FADOQuery.FieldByName('edition').AsString;
-  //AusgewBuch.Regal := FADOQuery.FieldByName(' shelf').AsString;
- // AusgewBuch.Platznummer := FADOQuery.FieldByName(' position').AsString;
- // AusgewBuch.Sprache := FADOQuery.FieldByName(' language').AsString;
- // AusgewBuch.Seitenanzahl := FADOQuery.FieldByName(' pages').AsInteger;
- // AusgewBuch.Publikationsjahr := FADOQuery.FieldByName(' publication_year').AsInteger;
+  // Lies den Buchnamen aus dem Dataset
+  SelectedBookName := DBGrid1.DataSource.DataSet.FieldByName('name').AsString;
 
-  // 1) Buchformular erstellen
-  BuchForm := TBuchform.Create(Self);
+  // Hier den korrekten FrameType übergeben – exakt wie in SwitchFrame definiert
+  Form1.SwitchFrame('AusleihDialog');
 
-  // 2) Connection für das Buchformular setzen (falls noch nicht passiert)
-  //    (Je nach Aufbau deines Projekts)
-  BuchForm.ADOQuery.Connection := Form1.DBKonfig.ADOConnection;
-
-  // 3) Buchdaten ins Formular laden
-  BuchForm.InitializeBuchformular(AusgewBuch);
-
-  // 4) Formular/Frame anzeigen
-
-  // Form1.SwitchFrame('Buchformular');
-  // ... oder du fügst es als Child-Frame ein:
-  BuchForm.Parent := Self;  //Container
-  BuchForm.Align := alClient;
-  BuchForm.Visible := True;
+  // Prüfen und Casten: Der aktuelle Frame muss vom Typ TAusleihDialog sein
+  if Form1.CurrentFrame is TAusleihDialog then
+    TAusleihDialog(Form1.CurrentFrame).SetBookData(SelectedBookName);
 end;
 
 
@@ -221,6 +195,7 @@ begin
 
   ApplyLocalFilter;
 end;
+
 // Fürs Debugen kann  ShowMessage(FADOQuery.SQL.Text); verwendet werden
 { --- Lokaler Filter für Genre, Name, ISBN, Autor, Herausgeber --- }
 procedure TBuchverwalter.ApplyLocalFilter;
@@ -285,7 +260,13 @@ begin
   end;
 end;
 
+
+
 end.
+
+
+
+
 
 
 {
