@@ -14,7 +14,8 @@ uses
   Ausleihform,
   Mahnungsverwaltung,
   Konfiguration,
-  DatenbankKonfig;
+  DatenbankKonfig,
+  AusleiheDialog;
 
 type
   TForm1 = class(TForm)
@@ -43,11 +44,12 @@ type
     procedure btnMahnungsverClick(Sender: TObject);
     procedure btnEinstellungenClick(Sender: TObject);
   private
-    FCurrentFrame: TFrame;   // Referenz auf den aktuell angezeigten Frame
     FDBKonfig: TKonfig_Datenbank;  // Zentrale DB-Konfiguration
+    FCurrentFrame: TFrame;   // Referenz auf den aktuell angezeigten Frame
     procedure PrüfeDatenbankVerbindung;  // Prüft die Verbindung zur Datenbank
   public
     property DBKonfig: TKonfig_Datenbank read FDBKonfig write FDBKonfig;
+    property CurrentFrame: TFrame read FCurrentFrame write FCurrentFrame;
     // Methode zum Framewechsel (hier wird ein neuer Frame erzeugt)
     procedure ShowKundenform;
     procedure SwitchFrame(FrameType: string);
@@ -236,6 +238,10 @@ begin
   else if FrameType = 'Dashboard' then
   begin
     NewFrame := TMainDashboard.Create(Self);
+  end
+  else if FrameType = 'AusleihDialog' then
+  begin
+    NewFrame := TAusleihDialog.Create(Self);
   end
   else if FrameType = 'Kundenverwaltung' then
   begin

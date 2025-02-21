@@ -109,5 +109,12 @@ object Frame1: TFrame1
     Height = 23
     TabOrder = 3
     Text = 'Suche'
+    OnChange = SBoxKundenverwaltungInvokeSearch
+  end
+  object ADOQuery1: TADOQuery
+    Filtered = True
+    Parameters = <>
+    Left = 664
+    Top = 72
   end
 end

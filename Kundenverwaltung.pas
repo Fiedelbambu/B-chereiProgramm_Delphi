@@ -22,15 +22,18 @@ type
     PaintBox4: TPaintBox;
     btn_KundenAnlegen: TButton;
     SBoxKundenverwaltung: TSearchBox;
+    ADOQuery1: TADOQuery;
     procedure btn_KundenAnlegenClick(Sender: TObject);
-    procedure FrameEnter(Sender: TObject); // <-- Für das automatische Laden
+    procedure FrameEnter(Sender: TObject);
+    procedure SBoxKundenverwaltungInvokeSearch(Sender: TObject); // <-- Für das automatische Laden
+
   private
     { Private-Deklarationen }
     FADOQuery: TADOQuery;      // Laufzeit-Query
-    FDataSource: TDataSource;  // DataSource für DBGrid
-
-    procedure LoadCustomers;   // Daten laden
+    FDataSource: TDataSource;   // DataSource für DBGrid
+    procedure LoadCustomers;    // Daten laden
     procedure AdjustGridColumns; // Spaltenbreiten anpassen
+  //  procedure ApplyLocalFilter;  // Filter anwenden
 
   public
     { Public-Deklarationen }
@@ -55,13 +58,16 @@ begin
   FADOQuery := TADOQuery.Create(Self);
   FADOQuery.Name := 'ADOQueryKunden'; // optional
 
+  // Setze den Cursor auf clUseClient für die Unterstützung von Filteroptionen
+  FADOQuery.CursorLocation := clUseClient;
+
   FDataSource := TDataSource.Create(Self);
   FDataSource.DataSet := FADOQuery;
 
   DBGrid1.DataSource := FDataSource;
 
-  // Falls du Teiltreffer in Delphi-Filtern brauchst:
-  // FADOQuery.FilterOptions := [foCaseInsensitive];
+  // Falls du Teiltreffer in Delphi-Filtern brauchst: ohne Berücksichtigung von Groß- und Kleinschreibung ausgewertet
+ // FADOQuery.FilterOptions := [foCaseInsensitive];
 end;
 
 // Destruktor: Alles wird vom Owner (Self) automatisch freigegeben
@@ -88,7 +94,7 @@ begin
       'SELECT ' +
       '  first_name AS Name, ' +
       '  last_name AS Familienname, ' +
-      '  email AS "E-Mail", ' +       // Anführungszeichen nötig, wenn du Sonderzeichen wie "-" nutzen willst
+      '  email AS "E-Mail", ' +
       '  phone AS Telefon, ' +
       '  birth_date AS Geburtsdatum, ' +
       '  street AS Straße, ' +
@@ -107,6 +113,45 @@ begin
   else
     ShowMessage('DBKonfig oder Form1 nicht verfügbar.');
 end;
+
+// Filterfunktion für die Tabelle
+procedure TFrame1.SBoxKundenverwaltungInvokeSearch(Sender: TObject);
+begin
+ // ApplyLocalFilter;
+end;
+
+{
+procedure TFrame1.ApplyLocalFilter;
+var
+  sSearch: string;
+begin
+  sSearch := Trim(SBoxKundenverwaltung.Text);
+
+  // CursorLocation = clUseClient erforderlich
+  FADOQuery.DisableControls;
+  try
+    FADOQuery.Filtered := False;
+    FADOQuery.Filter := '';
+
+    if sSearch <> '' then
+    begin
+      // OR-Verknüpfung über mehrere Spalten
+      FADOQuery.Filter := Format(
+        '(first_name LIKE ''%%%0:s%%'') OR ' +
+        '(last_name LIKE ''%%%0:s%%'') OR ' +
+        '(email LIKE ''%%%0:s%%'') OR ' +
+        '(phone LIKE ''%%%0:s%%'') OR ' +
+        '(city LIKE ''%%%0:s%%'')',
+        [sSearch]
+      );
+      FADOQuery.Filtered := True;
+    end;
+  finally
+    FADOQuery.EnableControls;
+  end;
+end;
+ }
+
 
 // Spaltenbreiten anpassen (wie in Buchverwaltung)
 procedure TFrame1.AdjustGridColumns;
@@ -154,9 +199,6 @@ end;
 // Button-Klick: Kunde anlegen (z. B. neues Kundenformular)
 procedure TFrame1.btn_KundenAnlegenClick(Sender: TObject);
 begin
-  // Falls du ein separates Formular/Frame für "Kunden anlegen" hast:
-  // Form1.SwitchFrame('KundenAnlegen') oder so.
-  // Oder du rufst eine Prozedur "ShowKundenform" auf:
   if Assigned(Form1) then
     Form1.ShowKundenform;
 end;
