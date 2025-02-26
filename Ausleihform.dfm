@@ -1,7 +1,7 @@
 object AusleiheFormular: TAusleiheFormular
   Left = 0
   Top = 0
-  Width = 640
+  Width = 702
   Height = 441
   Align = alClient
   AutoSize = True
@@ -9,7 +9,7 @@ object AusleiheFormular: TAusleiheFormular
   object lblAusleihformular: TLabel
     Left = 0
     Top = 0
-    Width = 640
+    Width = 702
     Height = 37
     Align = alTop
     Alignment = taCenter
@@ -41,7 +41,7 @@ object AusleiheFormular: TAusleiheFormular
   object DBGrid1: TDBGrid
     Left = 3
     Top = 244
-    Width = 627
+    Width = 686
     Height = 194
     DataSource = DataSource1
     TabOrder = 0
@@ -50,6 +50,18 @@ object AusleiheFormular: TAusleiheFormular
     TitleFont.Height = -12
     TitleFont.Name = 'Segoe UI'
     TitleFont.Style = []
+  end
+  object Sbtn_Rueckgabe: TStyledButton
+    Left = 16
+    Top = 56
+    Width = 75
+    Height = 25
+    Caption = 'R'#252'ckgabe'
+    TabOrder = 1
+    StyleElements = [seFont, seBorder]
+    OnClick = Sbtn_RueckgabeClick
+    StyleDrawType = btRounded
+    StyleClass = 'Puerto Rico'
   end
   object DataSource1: TDataSource
     Left = 504

@@ -40,7 +40,7 @@ begin
   Query := TADOQuery.Create(nil);
   try
     Query.Connection := Form1.DBKonfig.ADOConnection;
-    SQL := 'SELECT COUNT(*) AS Anzahl FROM loans WHERE book_id = :BookID;';
+    SQL := 'SELECT COUNT(*) AS Anzahl FROM loans WHERE book_id = :BookID AND return_date IS NULL;';
     Query.SQL.Text := SQL;
     Query.Parameters.ParamByName('BookID').Value := BookID;
     Query.Open;

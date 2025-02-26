@@ -1,5 +1,19 @@
 ﻿unit MainFrame;
 
+
+{ Bitte alles noch einmal nachbessern!!!
+Konstante Anwendung von Best Practices:
+Das Einhalten von Best Practices – wie
+z. B. die DRY-Prinzip
+(Don't Repeat Yourself), das
+KISS-Prinzip (Keep It Simple, Stupid) und
+das SOLID-Prinzip – verbessert die
+Codequalität und erleichtert die
+Weiterentwicklung.
+}
+
+
+
 interface
 
 uses

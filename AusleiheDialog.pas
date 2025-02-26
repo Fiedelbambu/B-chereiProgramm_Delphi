@@ -3,7 +3,7 @@ unit AusleiheDialog;
 interface
 
 uses
-  Winapi.Windows, Winapi.Messages,System.SysUtils, System.Classes, Vcl.Graphics,
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Data.DB, Data.Win.ADODB,
   Vcl.Grids, Vcl.DBGrids, Vcl.WinXCtrls, Vcl.ComCtrls;
 
@@ -30,13 +30,13 @@ type
     procedure SetBookData(const ABookName: string);
     procedure SearchCustomer;
     procedure PerformLoan;
-   end;
+  end;
 
 implementation
 
 {$R *.dfm}
 
-uses MainFrame, Buchverwaltung;
+uses MainFrame;
 
 { SetBookData: Übernimmt den übergebenen Buchnamen und aktualisiert das Label }
 procedure TAusleihDialog.SetBookData(const ABookName: string);
@@ -61,7 +61,7 @@ begin
   ADOQuery1.Close;
   ADOQuery1.Connection := Form1.DBKonfig.ADOConnection; // Form1.DBKonfig muss verfügbar sein
   ADOQuery1.SQL.Text :=
-    'SELECT customer_id AS Kundennummer, first_name AS Vorname, last_name AS Nachname, email AS E-Mail, phone AS Telephon, birth_date AS Geburtsdatum, street AS Straße, postal_code AS Postleizahl, city AS Stadt ' +
+    'SELECT customer_id, first_name, last_name, email, phone, birth_date, street, postal_code, city ' +
     'FROM customers ' +
     'WHERE customer_id LIKE :search ' +
     '   OR first_name LIKE :search ' +
@@ -101,7 +101,7 @@ begin
 
   try
     ADOQuery1.Open;
-    except
+  except
     on E: Exception do
       ShowMessage('Fehler beim Laden der Kunden: ' + E.Message);
   end;
@@ -143,19 +143,27 @@ begin
   loanDate := Date;
   dueDate := Date + 14;
 
-  // Führe den INSERT in die loans-Tabelle durch
+  // Führe den INSERT in die loans-Tabelle durch und aktualisiere anschließend den Buchstatus
   qry := TADOQuery.Create(Self);
   try
     qry.Connection := Form1.DBKonfig.ADOConnection;
+    // Zuerst den Loan-Eintrag anlegen
     qry.SQL.Text :=
       'INSERT INTO loans (customer_id, book_id, loan_date, due_date, return_date) ' +
       'VALUES (:CustomerID, :BookID, :LoanDate, :DueDate, NULL)';
     qry.Parameters.ParamByName('CustomerID').Value := customerId;
     qry.Parameters.ParamByName('BookID').Value := bookId;
-   // qry.Parameters.ParamByName('LoanDate').Value := loanDate;
-    qry.Parameters.ParamByName('LoanDate').Value := FormatDateTime('yyyy-mm-dd', Now);
-    qry.Parameters.ParamByName('DueDate').Value := dueDate;
+    qry.Parameters.ParamByName('LoanDate').Value := FormatDateTime('yyyyMMdd', loanDate);
+    qry.Parameters.ParamByName('DueDate').Value := FormatDateTime('yyyyMMdd', dueDate);
     qry.ExecSQL;
+
+    // Jetzt den Status des Buches auf "verliehen" setzen
+    qry.SQL.Text :=
+      'UPDATE books SET status = ''ausgeliehen'' WHERE book_id = :BookID';
+    qry.Parameters.Clear;
+    qry.Parameters.CreateParameter('BookID', ftInteger, pdInput, 0, bookId);
+    qry.ExecSQL;
+
     ShowMessage('Buch wurde erfolgreich verliehen.');
   finally
     qry.Free;
@@ -187,5 +195,6 @@ begin
   end;
 end;
 
-end.
 
+
+end.

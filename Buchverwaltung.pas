@@ -32,6 +32,8 @@ type
     procedure FrameEnter(Sender: TObject);
     procedure btnSucheClick(Sender: TObject);
     procedure DBGrid1DblClick(Sender: TObject);
+    procedure DBGrid1DrawColumnCell(Sender: TObject; const Rect: TRect;
+      DataCol: Integer; Column: TColumn; State: TGridDrawState);
 
   private
     FADOQuery: TADOQuery;
@@ -39,7 +41,7 @@ type
     procedure LoadBooks;
     procedure AdjustGridColumns;
     procedure ApplyLocalFilter;
-
+    function CheckBuchStatus: Boolean;
 
   public
     property ADOQuery: TADOQuery read FADOQuery;
@@ -69,6 +71,8 @@ begin
 
   // DBGrid an die DataSource binden
   DBGrid1.DataSource := FDataSource;
+  DBGrid1.OnDblClick := DBGrid1DblClick;
+
 
 end;
 
@@ -82,6 +86,9 @@ procedure TBuchverwalter.DBGrid1DblClick(Sender: TObject);
 var
   SelectedBookName: string;
 begin
+   // Wenn CheckBuchStatus False liefert, abbrechen.
+  if not CheckBuchStatus then
+    Exit;
   if (DBGrid1.DataSource = nil) or DBGrid1.DataSource.DataSet.IsEmpty then
     Exit;
 
@@ -95,6 +102,42 @@ begin
   if Form1.CurrentFrame is TAusleihDialog then
     TAusleihDialog(Form1.CurrentFrame).SetBookData(SelectedBookName);
 end;
+
+
+procedure TBuchverwalter.DBGrid1DrawColumnCell(Sender: TObject;
+  const Rect: TRect; DataCol: Integer; Column: TColumn;
+  State: TGridDrawState);
+begin
+  // Überprüfe, ob der Status "ausgeliehen" ist
+  if LowerCase(DBGrid1.DataSource.DataSet.FieldByName('Status').AsString) = 'ausgeliehen' then
+    DBGrid1.Canvas.Brush.Color := clRed  // Zeile rot einfärben
+  else
+    DBGrid1.Canvas.Brush.Color := clWindow; // Standardfarbe
+
+  DBGrid1.DefaultDrawColumnCell(Rect, DataCol, Column, State);
+end;
+
+
+function TBuchverwalter.CheckBuchStatus: Boolean;
+var
+  sStatus: string;
+begin
+  Result := True; // Standard: Buch ist verfügbar
+  if (DataSource1 = nil) or (DataSource1.DataSet.IsEmpty) then Exit;
+
+  sStatus := Trim(DataSource1.DataSet.FieldByName('Status').AsString);
+  ShowMessage('Status des Buches: [' + sStatus + ']'); // Debug-Ausgabe
+
+  if SameText(sStatus, 'ausgeliehen') then
+  begin
+    ShowMessage('Buch ist verliehen');
+    // Beispiel: Deaktiviere Bearbeitungsmodus (falls vorhanden)
+    DBGrid1.Options := DBGrid1.Options - [dgEditing];
+    Result := False;
+  end;
+end;
+
+
 
 { --- Beim Betreten des Frames: Alle Datensätze laden --- }
 procedure TBuchverwalter.FrameEnter(Sender: TObject);
@@ -122,7 +165,8 @@ begin
   '  language AS Sprache, ' +
   '  pages AS Seitenanzahl, ' +
   '  publication_year AS Veröffentlicht, ' +
-  '  inventory_number AS Inventarnummer ' +
+  '  inventory_number AS Inventarnummer, ' +   // Komma hier
+  '  status AS Status ' +                        // Beachte das Leerzeichen am Ende
   'FROM books';
  try
       FADOQuery.Open;
@@ -257,8 +301,5 @@ begin
   end;
 end;
 
-
-
 end.
-
 
