@@ -14,8 +14,7 @@ uses
   DatenbankKonfig in 'DatenbankKonfig.pas' {Konfig_Datenbank: TFrame},
   MailKonfig in 'MailKonfig.pas' {Konfig_Mail: TFrame},
   Mahnungsformular in 'Mahnungsformular.pas' {Frame3: TFrame},
-  AusleiheDialog in 'AusleiheDialog.pas' {AusleihDialog: TFrame},
-  LoanRepository in 'LoanRepository.pas';
+  AusleiheDialog in 'AusleiheDialog.pas' {AusleihDialog: TFrame};
 
 {$R *.res}
 

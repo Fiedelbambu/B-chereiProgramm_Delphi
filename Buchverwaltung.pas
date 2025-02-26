@@ -54,7 +54,7 @@ implementation
 uses
   MainFrame, DatenbankKonfig;
 
-{ --- Konstruktor / Destructor --- }
+{ --- Konstruktor / Destructor besser Lernen --- }
 
 constructor TBuchverwalter.Create(AOwner: TComponent);
 begin
@@ -72,7 +72,10 @@ begin
 
 end;
 
-
+destructor TBuchverwalter.Destroy;
+begin
+  inherited Destroy;
+end;
 
 
 procedure TBuchverwalter.DBGrid1DblClick(Sender: TObject);
@@ -91,12 +94,6 @@ begin
   // Prüfen und Casten: Der aktuelle Frame muss vom Typ TAusleihDialog sein
   if Form1.CurrentFrame is TAusleihDialog then
     TAusleihDialog(Form1.CurrentFrame).SetBookData(SelectedBookName);
-end;
-
-
-destructor TBuchverwalter.Destroy;
-begin
-  inherited Destroy;
 end;
 
 { --- Beim Betreten des Frames: Alle Datensätze laden --- }
@@ -265,63 +262,3 @@ end;
 end.
 
 
-
-
-
-
-{
-// Pseudocode für das Modul Buchverwaltung
-// Autor: Christian Fiedler
-
-MODULE Buchverwaltung
-
-    // --- Teil 1: Buchformular (Anlegen/Bearbeiten) ---
-    // (Die Funktionen aus dem separaten Modul "Buchformular" können hier entweder integriert
-    //  oder als Untermodul referenziert werden. Im Folgenden wird davon ausgegangen, dass
-    //  das Buchformular über eigene Funktionen verfügt, die hier aufgerufen werden.)
-
-    // Funktion zum Öffnen des Buchformulars im "Neu"-Modus
-    FUNCTION OpenNeuesBuchformular()
-        CALL Buchformular.InitializeBuchformular("Neu")
-    END FUNCTION
-
-    // Funktion zum Öffnen des Buchformulars im "Bearbeiten"-Modus
-    FUNCTION OpenBuchformularBearbeiten(ausgewähltesBuch)
-        IF ausgewähltesBuch IS NULL THEN
-            CALL ShowError("Bitte wählen Sie ein Buch aus, um es zu bearbeiten.")
-            RETURN
-        END IF
-        CALL Buchformular.InitializeBuchformular("Bearbeiten", ausgewähltesBuch)
-    END FUNCTION
-
-
-    // Funktion zum Aktualisieren der vollständigen Buchliste (z.B. nach Speichern)
-    FUNCTION RefreshBuchList()
-        VARIABLE alleBücher = Database.GetAllBooks()
-        CALL PopulateDataGrid(buchDataGrid, alleBücher)
-    END FUNCTION
-
-    // --- Initialisierung der gesamten Buchverwaltung ---
-    FUNCTION InitializeBuchverwaltungUI()
-        // Initialisiere die Such- und Filter-Komponenten
-        CALL InitializeBuchsuche()
-
-        // (Optional) Initialisiere zusätzliche UI-Komponenten, z.B. Buttons für "Neues Buch"
-        SET OnClick("NeuesBuchButton") TO OpenNeuesBuchformular
-    END FUNCTION
-
-    // --- Hauptfunktion des Moduls Buchverwaltung ---
-    FUNCTION MainBuchverwaltung()
-        // Initialisiere die Benutzeroberfläche
-        CALL InitializeBuchverwaltungUI()
-
-        // Lade die initiale Buchliste in das DataGrid
-        CALL RefreshBuchList()
-
-        // Starte die Event-Schleife der Buchverwaltungsoberfläche
-        CALL StartEventLoop()
-    END FUNCTION
-
-END MODULE
-
-}

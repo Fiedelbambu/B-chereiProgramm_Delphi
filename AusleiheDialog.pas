@@ -3,7 +3,7 @@ unit AusleiheDialog;
 interface
 
 uses
-  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Classes, Vcl.Graphics,
+  Winapi.Windows, Winapi.Messages,System.SysUtils, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Data.DB, Data.Win.ADODB,
   Vcl.Grids, Vcl.DBGrids, Vcl.WinXCtrls, Vcl.ComCtrls;
 
@@ -30,13 +30,13 @@ type
     procedure SetBookData(const ABookName: string);
     procedure SearchCustomer;
     procedure PerformLoan;
-  end;
+   end;
 
 implementation
 
 {$R *.dfm}
 
-uses MainFrame;
+uses MainFrame, Buchverwaltung;
 
 { SetBookData: Übernimmt den übergebenen Buchnamen und aktualisiert das Label }
 procedure TAusleihDialog.SetBookData(const ABookName: string);
@@ -61,7 +61,7 @@ begin
   ADOQuery1.Close;
   ADOQuery1.Connection := Form1.DBKonfig.ADOConnection; // Form1.DBKonfig muss verfügbar sein
   ADOQuery1.SQL.Text :=
-    'SELECT customer_id, first_name, last_name, email, phone, birth_date, street, postal_code, city ' +
+    'SELECT customer_id AS Kundennummer, first_name AS Vorname, last_name AS Nachname, email AS E-Mail, phone AS Telephon, birth_date AS Geburtsdatum, street AS Straße, postal_code AS Postleizahl, city AS Stadt ' +
     'FROM customers ' +
     'WHERE customer_id LIKE :search ' +
     '   OR first_name LIKE :search ' +
@@ -101,7 +101,7 @@ begin
 
   try
     ADOQuery1.Open;
-  except
+    except
     on E: Exception do
       ShowMessage('Fehler beim Laden der Kunden: ' + E.Message);
   end;
@@ -186,8 +186,6 @@ begin
     lblKundenname.Caption := firstName + ' ' + lastName;
   end;
 end;
-
-
 
 end.
 

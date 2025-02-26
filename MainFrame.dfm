@@ -122,6 +122,7 @@ object Form1: TForm1
       Align = alTop
       Caption = 'Hauptmenu'
       TabOrder = 5
+      StyleName = 'Windows'
       OnClick = btn_HauptmanuClick
     end
     object ToolButton6: TToolButton

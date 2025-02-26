@@ -21,12 +21,36 @@ type
   TLoanRepository = class
   public
     class function GetLoans: TList<TLoanData>;
+    class function IstBuchAusgeliehen(BookID: Integer): Boolean;
+
   end;
 
 implementation
 
 uses
   MainFrame;  // Hier wird Form1 erkannt
+
+
+class function TLoanRepository.IstBuchAusgeliehen(BookID: Integer): Boolean;
+var
+  Query: TADOQuery;
+  SQL: string;
+begin
+  Result := False;
+  Query := TADOQuery.Create(nil);
+  try
+    Query.Connection := Form1.DBKonfig.ADOConnection;
+    SQL := 'SELECT COUNT(*) AS Anzahl FROM loans WHERE book_id = :BookID;';
+    Query.SQL.Text := SQL;
+    Query.Parameters.ParamByName('BookID').Value := BookID;
+    Query.Open;
+    Result := Query.FieldByName('Anzahl').AsInteger > 0;
+  finally
+    Query.Free;
+  end;
+end;
+
+
 
 class function TLoanRepository.GetLoans: TList<TLoanData>;
 var
@@ -40,7 +64,7 @@ begin
     // Verbindung direkt über DBKonfig herstellen
     Query.Connection := Form1.DBKonfig.ADOConnection;
 
-    ShowMessage('📡 Verbindung zur Datenbank verwendet: ' + Form1.DBKonfig.ADOConnection.ConnectionString);
+   // ShowMessage('Verbindung zur Datenbank verwendet: ' + Form1.DBKonfig.ADOConnection.ConnectionString);
 
     // SQL-Abfrage korrekt zusammenbauen
     SQL := 'SELECT L.loan_id, ' +
@@ -56,12 +80,12 @@ begin
            'INNER JOIN books B ON L.book_id = B.book_id;';
 
     Query.SQL.Text := SQL;
-    ShowMessage('🔎 SQL-Abfrage: ' + SQL);
+   // ShowMessage(' SQL-Abfrage: ' + SQL);
 
     // Versuch, die Query zu öffnen
     try
       Query.Open;
-      ShowMessage('✅ Query erfolgreich geöffnet!');
+     // ShowMessage(' Query erfolgreich geöffnet!');
     except
       on E: Exception do
       begin
@@ -85,7 +109,7 @@ begin
       Query.Next;
     end;
 
-    ShowMessage('✅ Daten erfolgreich geladen: ' + IntToStr(Result.Count) + ' Einträge.');
+    ShowMessage('Daten erfolgreich geladen: ' + IntToStr(Result.Count) + ' Einträge.');
 
   finally
     Query.Free;
