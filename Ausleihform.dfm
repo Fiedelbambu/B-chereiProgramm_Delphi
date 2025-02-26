@@ -1,7 +1,7 @@
 object AusleiheFormular: TAusleiheFormular
   Left = 0
   Top = 0
-  Width = 640
+  Width = 702
   Height = 441
   Align = alClient
   AutoSize = True
@@ -9,7 +9,7 @@ object AusleiheFormular: TAusleiheFormular
   object lblAusleihformular: TLabel
     Left = 0
     Top = 0
-    Width = 640
+    Width = 702
     Height = 37
     Align = alTop
     Alignment = taCenter
@@ -22,45 +22,6 @@ object AusleiheFormular: TAusleiheFormular
     ParentFont = False
     Layout = tlCenter
     ExplicitWidth = 194
-  end
-  object lblKunde: TLabel
-    Left = 40
-    Top = 45
-    Width = 58
-    Height = 25
-    Caption = 'Kunde:'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -19
-    Font.Name = 'Segoe UI'
-    Font.Style = []
-    ParentFont = False
-  end
-  object lblAusleihtag: TLabel
-    Left = 0
-    Top = 112
-    Width = 98
-    Height = 25
-    Caption = 'Ausleihtag :'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -19
-    Font.Name = 'Segoe UI'
-    Font.Style = []
-    ParentFont = False
-  end
-  object lblRueckgabewert: TLabel
-    Left = 380
-    Top = 112
-    Width = 91
-    Height = 25
-    Caption = 'R'#252'ckgabe :'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -19
-    Font.Name = 'Segoe UI'
-    Font.Style = []
-    ParentFont = False
   end
   object lblAusleihen: TLabel
     Left = 0
@@ -77,90 +38,38 @@ object AusleiheFormular: TAusleiheFormular
     ParentFont = False
     Layout = tlCenter
   end
-  object SearchBox1: TSearchBox
-    Left = 152
-    Top = 50
-    Width = 201
-    Height = 23
-    TabOrder = 0
-    Text = 'SearchBox1'
-  end
-  object DatePickerAusleihtag: TDatePicker
-    Left = 152
-    Top = 105
-    Date = 45701.000000000000000000
-    DateFormat = 'dd/mm/yyyy'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -16
-    Font.Name = 'Segoe UI'
-    Font.Style = []
-    TabOrder = 1
-  end
-  object DatePicker2: TDatePicker
-    Left = 480
-    Top = 105
-    Date = 45701.000000000000000000
-    DateFormat = 'dd/mm/yyyy'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -16
-    Font.Name = 'Segoe UI'
-    Font.Style = []
-    TabOrder = 2
-  end
-  object btnAusleihen: TButton
-    Left = 128
-    Top = 160
-    Width = 75
-    Height = 25
-    Caption = 'Ausleihen'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -16
-    Font.Name = 'Segoe UI'
-    Font.Style = []
-    ParentFont = False
-    TabOrder = 3
-  end
-  object btnVerlaengern: TButton
-    Left = 256
-    Top = 160
-    Width = 75
-    Height = 25
-    Caption = 'Verl'#228'ngern'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -16
-    Font.Name = 'Segoe UI'
-    Font.Style = []
-    ParentFont = False
-    TabOrder = 4
-  end
-  object btn_Rueckgabe: TButton
-    Left = 376
-    Top = 160
-    Width = 75
-    Height = 25
-    Caption = 'R'#252'ckgabe'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -16
-    Font.Name = 'Segoe UI'
-    Font.Style = []
-    ParentFont = False
-    TabOrder = 5
-  end
   object DBGrid1: TDBGrid
-    Left = 0
+    Left = 3
     Top = 244
-    Width = 637
-    Height = 197
-    TabOrder = 6
+    Width = 686
+    Height = 194
+    DataSource = DataSource1
+    TabOrder = 0
     TitleFont.Charset = DEFAULT_CHARSET
     TitleFont.Color = clWindowText
     TitleFont.Height = -12
     TitleFont.Name = 'Segoe UI'
     TitleFont.Style = []
+  end
+  object Sbtn_Rueckgabe: TStyledButton
+    Left = 16
+    Top = 56
+    Width = 75
+    Height = 25
+    Caption = 'R'#252'ckgabe'
+    TabOrder = 1
+    StyleElements = [seFont, seBorder]
+    OnClick = Sbtn_RueckgabeClick
+    StyleDrawType = btRounded
+    StyleClass = 'Puerto Rico'
+  end
+  object DataSource1: TDataSource
+    Left = 504
+    Top = 48
+  end
+  object ADOQuery1: TADOQuery
+    Parameters = <>
+    Left = 576
+    Top = 48
   end
 end

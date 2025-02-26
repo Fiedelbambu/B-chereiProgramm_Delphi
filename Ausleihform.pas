@@ -5,260 +5,222 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Data.DB, Vcl.Grids,
-  Vcl.DBGrids, Vcl.StdCtrls, Vcl.WinXPickers, Vcl.WinXCtrls;
+  Vcl.DBGrids, Vcl.StdCtrls, DatenbankKonfig,
+  FireDAC.Comp.Client, LoanRepository, System.Generics.Collections,
+  Data.Win.ADODB, Vcl.ButtonStylesAttributes, Vcl.StyledButton;
 
 type
   TAusleiheFormular = class(TFrame)
     lblAusleihformular: TLabel;
-    lblKunde: TLabel;
-    SearchBox1: TSearchBox;
-    lblAusleihtag: TLabel;
-    DatePickerAusleihtag: TDatePicker;
-    lblRueckgabewert: TLabel;
-    DatePicker2: TDatePicker;
-    btnAusleihen: TButton;
-    btnVerlaengern: TButton;
-    btn_Rueckgabe: TButton;
-    lblAusleihen: TLabel;
     DBGrid1: TDBGrid;
+    DataSource1: TDataSource;
+    ADOQuery1: TADOQuery;
+    Sbtn_Rueckgabe: TStyledButton;
+    procedure LoadData;
+    constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
+    procedure Sbtn_RueckgabeClick(Sender: TObject);
   private
-    { Private-Deklarationen }
+    FMemTable: TFDMemTable;  // Klassenvariable
+    procedure DisplayData(Loans: TList<TLoanData>);
+    procedure AdjustGridColumns;
+    procedure RückgabeDatumGetText(Sender: TField; var Text: string; DisplayText: Boolean);
+
   public
-    { Public-Deklarationen }
   end;
 
 implementation
 
 {$R *.dfm}
 
+uses
+  MainFrame;
+
+
+constructor TAusleiheFormular.Create(AOwner: TComponent);
+begin
+  inherited Create(AOwner);
+  FMemTable := TFDMemTable.Create(Self);
+  FMemTable.FieldDefs.Clear;
+
+  // Felder für das Grid definieren
+  with FMemTable.FieldDefs do
+  begin
+    Add('AusleihID', ftInteger);    // LoanID
+      Add('book_id', ftInteger);      // <-- Dieses Feld hinzufügen
+
+    Add('Kunden Name', ftString, 100);
+    Add('Buch Titel', ftString, 150);
+    Add('Ausleih Datum', ftDate);
+    Add('Rückgabe frist', ftDate);
+    Add('Rückgabe Datum', ftDate);
+  end;
+
+  FMemTable.CreateDataSet;
+
+  // OnGetText für das Feld "Rückgabe Datum" zuweisen
+  if FMemTable.FindField('Rückgabe Datum') <> nil then
+    TDateTimeField(FMemTable.FieldByName('Rückgabe Datum')).OnGetText := RückgabeDatumGetText;
+
+  DataSource1.DataSet := FMemTable;  // Datenquelle zuweisen
+  DBGrid1.DataSource := DataSource1;
+
+  LoadData;  // Daten laden
+end;
+
+destructor TAusleiheFormular.Destroy;
+begin
+  FMemTable.Free;
+  inherited Destroy;
+end;
+
+procedure TAusleiheFormular.LoadData;
+var
+  Loans: TList<TLoanData>;
+begin
+  Loans := TLoanRepository.GetLoans;
+  try
+    DisplayData(Loans);
+  finally
+    Loans.Free;
+  end;
+end;
+
+procedure TAusleiheFormular.DisplayData(Loans: TList<TLoanData>);
+var
+  Loan: TLoanData;
+begin
+  FMemTable.Close;
+  FMemTable.Open;
+  AdjustGridColumns;
+
+  // Daten einfügen
+  for Loan in Loans do
+begin
+  FMemTable.Append;
+ FMemTable.FieldByName('AusleihID').AsInteger := Loan.LoanID;
+      FMemTable.FieldByName('book_id').AsInteger := Loan.BookID;
+  FMemTable.FieldByName('Kunden Name').AsString := Loan.CustomerName;
+  FMemTable.FieldByName('Buch Titel').AsString := Loan.BookTitle;
+  FMemTable.FieldByName('Ausleih Datum').AsDateTime := Loan.LoanDate;
+  FMemTable.FieldByName('Rückgabe frist').AsDateTime := Loan.DueDate;
+  if Loan.ReturnDate = 0 then
+    FMemTable.FieldByName('Rückgabe Datum').Clear
+  else
+    FMemTable.FieldByName('Rückgabe Datum').AsDateTime := Loan.ReturnDate;
+  FMemTable.Post;
+end;
+
+end;
+
+procedure TAusleiheFormular.AdjustGridColumns;
+var
+  i, MaxWidth, TextWidth: Integer;
+  Column: TColumn;
+  bmp: TBitmap;
+  ds: TDataSet;
+begin
+  ds := DBGrid1.DataSource.DataSet;
+  if ds = nil then Exit;
+
+  bmp := TBitmap.Create;
+  try
+    bmp.Canvas.Font := DBGrid1.Font;
+    for i := 0 to DBGrid1.Columns.Count - 1 do
+    begin
+      Column := DBGrid1.Columns[i];
+      MaxWidth := bmp.Canvas.TextWidth(Column.Title.Caption) + 8;
+      ds.DisableControls;
+      try
+        ds.First;
+        while not ds.Eof do
+        begin
+          TextWidth := bmp.Canvas.TextWidth(VarToStr(Column.Field.AsString)) + 8;
+          if TextWidth > MaxWidth then
+            MaxWidth := TextWidth;
+          ds.Next;
+        end;
+      finally
+        ds.First;
+        ds.EnableControls;
+      end;
+      Column.Width := MaxWidth;
+    end;
+  finally
+    bmp.Free;
+  end;
+end;
+
+// Definition der OnGetText-Methode
+procedure TAusleiheFormular.RückgabeDatumGetText(Sender: TField; var Text: string; DisplayText: Boolean);
+begin
+  if Sender.IsNull or (Sender.AsDateTime = 0) then
+    Text := ''
+  else
+    Text := FormatDateTime('dd.mm.yyyy', Sender.AsDateTime);
+end;
+
+procedure TAusleiheFormular.Sbtn_RueckgabeClick(Sender: TObject);
+var
+  LoanID, BookID: Integer;  // <-- BookID hier deklarieren
+  qry: TADOQuery;
+  ReturnDate: TDate;
+begin
+  // Prüfen, ob ein Datensatz im Grid ausgewählt ist
+  if (DBGrid1.DataSource = nil) or DBGrid1.DataSource.DataSet.IsEmpty then
+  begin
+    ShowMessage('Bitte wählen Sie einen Datensatz aus.');
+    Exit;
+  end;
+
+  // LoanID aus dem ausgewählten Datensatz ermitteln (hier als AusleihID gespeichert)
+  LoanID := DBGrid1.DataSource.DataSet.FieldByName('AusleihID').AsInteger;
+
+  // BookID aus dem ausgewählten Datensatz ermitteln
+  BookID := DBGrid1.DataSource.DataSet.FieldByName('book_id').AsInteger;
+
+  // Setze das Rückgabedatum auf heute
+  ReturnDate := Date;
+
+  qry := TADOQuery.Create(Self);
+  try
+    qry.Connection := Form1.DBKonfig.ADOConnection;
+    Form1.DBKonfig.ADOConnection.BeginTrans;
+    try
+      // Aktualisiere den Rückgabedatum-Wert in der Tabelle loans
+      qry.SQL.Text :=
+        'UPDATE loans ' +
+        'SET return_date = :ReturnDate ' +
+        'WHERE loan_id = :LoanID';
+      qry.Parameters.Clear;
+      qry.Parameters.CreateParameter('ReturnDate', ftString, pdInput, 8, FormatDateTime('yyyyMMdd', ReturnDate));
+      qry.Parameters.CreateParameter('LoanID', ftInteger, pdInput, 0, LoanID);
+      qry.ExecSQL;
+
+      // Setze den Status des Buchs in der Tabelle books auf "nicht verliehen"
+      qry.SQL.Text :=
+        'UPDATE books SET status = ''nicht verliehen'' WHERE book_id = :BookID';
+      qry.Parameters.Clear;
+      qry.Parameters.CreateParameter('BookID', ftInteger, pdInput, 0, BookID);
+      qry.ExecSQL;
+
+      Form1.DBKonfig.ADOConnection.CommitTrans;
+      ShowMessage('Buch erfolgreich zurückgegeben.');
+    except
+      on E: Exception do
+      begin
+        Form1.DBKonfig.ADOConnection.RollbackTrans;
+        ShowMessage('Fehler bei der Rückgabe: ' + E.Message);
+      end;
+    end;
+  finally
+    qry.Free;
+  end;
+
+  // Daten neu laden, damit der Grid-Eintrag aktualisiert wird
+  LoadData;
+end;
+
+
 end.
-
-
-{// Pseudocode für das Ausleihformular
-// Autor: Christian Fiedler
-
-MODULE Ausleihformular
-
-    // --- Deklaration der UI-Komponenten ---
-    // Auswahl des Kunden (Dropdown oder Suchfeld)
-    VARIABLE kundeAuswahl = ""         // Kunde oder Kundennummer
-
-    // Datumsauswahlfelder
-    VARIABLE ausleihtag = ""           // Datumsauswahlfeld für den Ausleihtag
-    VARIABLE sollRueckgabedatum = ""   // Datumsauswahlfeld für das Soll-Rückgabedatum (automatisch berechnet)
-
-    // Buttons für die Aktionen
-    VARIABLE buttonAusleihen    // Button für "Ausleihen"
-    VARIABLE buttonVerlaengern  // Button für "Verlängern"
-    VARIABLE buttonRueckgabe    // Button für "Rückgabe"
-
-    // --- Initialisierung des Ausleihformulars ---
-    FUNCTION InitializeAusleihformular(modus)
-        // modus kann "Neu", "Verlängern" oder "Rückgabe" sein
-        IF modus == "Neu" THEN
-            CALL ClearField(kundeAuswahl)
-            CALL ClearField(ausleihtag)
-            // Automatische Berechnung des Soll-Rückgabedatums, z.B. 14 Tage nach Ausleihtag
-            sollRueckgabedatum = CalculateSollRueckgabedatum(GetCurrentDate())
-        ELSE IF modus == "Verlängern" THEN
-            // Lade den bestehenden Ausleihvorgang, um ihn zu verlängern
-            VARIABLE bestehenderVorgang = GET SelectedLoan()
-            IF bestehenderVorgang IS NULL THEN
-                CALL ShowError("Bitte wählen Sie einen Ausleihvorgang aus, den Sie verlängern möchten.")
-                RETURN
-            END IF
-            CALL LoadLoanData(bestehenderVorgang)
-            // Berechne das neue Soll-Rückgabedatum (z. B. Verlängerung um weitere 7 Tage)
-            sollRueckgabedatum = CalculateNewRueckgabedatum(bestehenderVorgang.ausleihtag, 7)
-        ELSE IF modus == "Rückgabe" THEN
-            // Lade den bestehenden Ausleihvorgang für die Rückgabe
-            VARIABLE bestehenderVorgang = GET SelectedLoan()
-            IF bestehenderVorgang IS NULL THEN
-                CALL ShowError("Bitte wählen Sie einen Ausleihvorgang für die Rückgabe aus.")
-                RETURN
-            END IF
-            CALL LoadLoanData(bestehenderVorgang)
-        END IF
-
-        // Zeige das Ausleihformular an
-        CALL ShowForm("Ausleihformular")
-    END FUNCTION
-
-    // --- Validierung der Eingaben ---
-    FUNCTION ValidateAusleihForm() RETURNS BOOLEAN
-        // Überprüfe, ob ein Kunde ausgewählt wurde
-        IF kundeAuswahl IS EMPTY THEN
-            CALL ShowError("Bitte wählen Sie einen Kunden aus.")
-            RETURN FALSE
-        END IF
-
-        // Überprüfe, ob ein Ausleihtag gesetzt ist
-        IF ausleihtag IS EMPTY THEN
-            CALL ShowError("Bitte wählen Sie einen Ausleihtag aus.")
-            RETURN FALSE
-        END IF
-
-        // Optional: Weitere Prüfungen, z.B. ob das Soll-Rückgabedatum in der Zukunft liegt
-        IF NOT IsFutureDate(sollRueckgabedatum) THEN
-            CALL ShowError("Das Soll-Rückgabedatum muss in der Zukunft liegen.")
-            RETURN FALSE
-        END IF
-
-        RETURN TRUE
-    END FUNCTION
-
-    // --- Speichern bzw. Bearbeiten des Ausleihvorgangs ---
-    FUNCTION SaveAusleihVorgang(aktion)
-        // Aktion kann "Ausleihen", "Verlängern" oder "Rückgabe" sein
-
-        IF NOT ValidateAusleihForm() THEN
-            RETURN
-        END IF
-
-        VARIABLE loanData = {
-            "Kunde": kundeAuswahl,
-            "Ausleihtag": ausleihtag,
-            "SollRueckgabedatum": sollRueckgabedatum
-        }
-
-        IF aktion == "Ausleihen" THEN
-            // Neuen Ausleihvorgang erfassen
-            CALL Database.AddLoan(loanData)
-            CALL ShowMessage("Ausleihe erfolgreich erfasst.")
-        ELSE IF aktion == "Verlängern" THEN
-            // Verlängerung prüfen, z.B. ob keine Reservierung vorliegt
-            IF CALL CanExtendLoan(loanData) THEN
-                CALL Database.UpdateLoan(loanData)
-                CALL ShowMessage("Ausleihe erfolgreich verlängert.")
-            ELSE
-                CALL ShowError("Verlängerung nicht möglich: Es liegt eine Reservierung vor.")
-                RETURN
-            END IF
-        ELSE IF aktion == "Rückgabe" THEN
-            // Rückgabe verarbeiten
-            CALL Database.CompleteLoan(loanData)
-            CALL ShowMessage("Rückgabe erfolgreich registriert.")
-        END IF
-
-        // Nach der Aktion: Übersicht aktualisieren und Formular schließen
-        CALL RefreshLoanOverview()
-        CALL CloseForm("Ausleihformular")
-    END FUNCTION
-
-    // --- Event-Handler für Buttons ---
-    FUNCTION OnAusleihenButtonClick()
-        CALL SaveAusleihVorgang("Ausleihen")
-    END FUNCTION
-
-    FUNCTION OnVerlaengernButtonClick()
-        CALL SaveAusleihVorgang("Verlängern")
-    END FUNCTION
-
-    FUNCTION OnRueckgabeButtonClick()
-        CALL SaveAusleihVorgang("Rückgabe")
-    END FUNCTION
-
-    // --- Hilfsfunktionen ---
-    FUNCTION CalculateSollRueckgabedatum(startDatum) RETURNS DATE
-        // Beispiel: 14 Tage nach dem Ausleihtag
-        RETURN startDatum + 14 Tage
-    END FUNCTION
-
-    FUNCTION CalculateNewRueckgabedatum(ausleihtag, verlängerungstage) RETURNS DATE
-        RETURN ausleihtag + verlängerungstage Tage
-    END FUNCTION
-
-    FUNCTION IsFutureDate(datum) RETURNS BOOLEAN
-        RETURN datum > GetCurrentDate()
-    END FUNCTION
-
-    // --- Haupt-Einstiegspunkt für das Ausleihformular ---
-    FUNCTION MainAusleihformular(modus)
-        CALL InitializeAusleihformular(modus)
-        // Registriere Event-Handler für die Aktions-Buttons
-        SET OnClick("AusleihenButton") TO OnAusleihenButtonClick
-        SET OnClick("VerlaengernButton") TO OnVerlaengernButtonClick
-        SET OnClick("RueckgabeButton") TO OnRueckgabeButtonClick
-        // Starte die Event-Schleife für das Ausleihformular
-        CALL StartEventLoop()
-    END FUNCTION
-
-END MODULE
-}
-
-     // Pseudocode für Modul "Aktuelle Ausleihen"
-// Autor: Christian Fiedler
-
-MODULE AktuelleAusleihen
-
-    // Deklaration der UI-Komponente: DataGrid zur Anzeige der Ausleihen
-    VARIABLE ausleihenDataGrid
-
-    // --- Initialisierung der Ausleihe-Übersicht ---
-    FUNCTION InitializeAusleiheÜbersicht()
-        // Erstelle das DataGrid und konfiguriere die Spalten (z. B. Kundennr, Name, Ausleihtag, Soll-Rückgabedatum, Status)
-        ausleihenDataGrid = CreateDataGrid("AusleihenDataGrid")
-        CALL SetupDataGridColumns(ausleihenDataGrid, ["Kundennr", "Name", "Ausleihtag", "Soll-Rückgabedatum", "Status"])
-
-        // Registriere den Event-Handler für Doppelklick auf eine Zeile
-        SET OnDoubleClick(ausleihenDataGrid) TO FUNCTION() {
-            VARIABLE selectedLoan = GET SelectedRow(ausleihenDataGrid)
-            IF selectedLoan IS NOT NULL THEN
-                CALL OpenLoanDetails(selectedLoan)
-            ELSE
-                CALL ShowError("Bitte wählen Sie einen Ausleihvorgang aus.")
-            END IF
-        }
-    END FUNCTION
-
-    // --- Aktualisieren der Ausleihenliste ---
-    FUNCTION RefreshAusleihenListe()
-        // Lade alle aktiven Ausleihvorgänge aus der Datenbank
-        VARIABLE alleAusleihen = Database.GetActiveLoans()
-
-        // Aktualisiere den Status: Falls das Soll-Rückgabedatum bereits vergangen ist, setze den Status auf "Überfällig"
-        FOR EACH loan IN alleAusleihen DO
-            IF loan.SollRueckgabedatum < GetCurrentDate() THEN
-                loan.Status = "Überfällig"
-            ELSE
-                loan.Status = "OK"
-            END IF
-        END FOR
-
-        // Fülle das DataGrid mit den aktualisierten Ausleihvorgängen
-        CALL PopulateDataGrid(ausleihenDataGrid, alleAusleihen)
-
-        // Wende farbliche Kennzeichnung auf überfällige Ausleihen an
-        CALL HighlightOverdueLoans(ausleihenDataGrid)
-    END FUNCTION
-
-    // --- Farbliche Kennzeichnung für überfällige Ausleihen ---
-    FUNCTION HighlightOverdueLoans(dataGrid)
-        FOR EACH row IN dataGrid.Rows DO
-            IF row["Status"] == "Überfällig" THEN
-                // Setze beispielsweise den Hintergrund der Zeile auf Rot
-                row.SetBackgroundColor("red")
-            ELSE
-                // Standardfarbe, falls nicht überfällig
-                row.SetBackgroundColor("white")
-            END IF
-        END FOR
-    END FUNCTION
-
-    // --- Öffnen der Detailansicht eines ausgewählten Ausleihvorgangs ---
-    FUNCTION OpenLoanDetails(loan)
-        // Öffnet z. B. ein Detailformular, in dem der Benutzer den Vorgang bearbeiten (Rückgabe/Verlängerung) kann
-        CALL ShowLoanDetailForm(loan)
-    END FUNCTION
-
-    // --- Haupt-Einstiegspunkt für das Modul "Aktuelle Ausleihen" ---
-    FUNCTION MainAktuelleAusleihen()
-        CALL InitializeAusleiheÜbersicht()
-        CALL RefreshAusleihenListe()
-        // Starte die Event-Schleife für die Ausleihe-Übersicht
-        CALL StartEventLoop()
-    END FUNCTION
-
-END MODULE
-}
 

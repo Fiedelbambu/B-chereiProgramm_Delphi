@@ -68,10 +68,10 @@ object Frame1: TFrame1
     Height = 8
   end
   object PaintBox4: TPaintBox
-    Left = 3
-    Top = 195
-    Width = 637
-    Height = 8
+    Left = 0
+    Top = 175
+    Width = 722
+    Height = 20
   end
   object btn_Suchen: TButton
     Left = 544
@@ -83,9 +83,9 @@ object Frame1: TFrame1
   end
   object DBGrid1: TDBGrid
     Left = 0
-    Top = 201
+    Top = 209
     Width = 722
-    Height = 176
+    Height = 168
     TabOrder = 1
     TitleFont.Charset = DEFAULT_CHARSET
     TitleFont.Color = clWindowText

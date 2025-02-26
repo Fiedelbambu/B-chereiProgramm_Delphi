@@ -22,7 +22,6 @@ object Form1: TForm1
     ButtonHeight = 25
     Caption = 'ToolBar1'
     TabOrder = 0
-    ExplicitWidth = 695
     DesignSize = (
       697
       25)
@@ -123,6 +122,7 @@ object Form1: TForm1
       Align = alTop
       Caption = 'Hauptmenu'
       TabOrder = 5
+      StyleName = 'Windows'
       OnClick = btn_HauptmanuClick
     end
     object ToolButton6: TToolButton
@@ -159,8 +159,6 @@ object Form1: TForm1
     Align = alClient
     AutoSize = True
     TabOrder = 1
-    ExplicitWidth = 695
-    ExplicitHeight = 480
   end
   object Timer1: TTimer
     OnTimer = Timer1Timer

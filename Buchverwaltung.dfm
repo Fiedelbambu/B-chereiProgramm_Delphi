@@ -27,8 +27,9 @@ object Buchverwalter: TBuchverwalter
   object PaintBox1: TPaintBox
     Left = 0
     Top = 43
-    Width = 637
+    Width = 858
     Height = 14
+    Anchors = [akLeft, akRight]
   end
   object lblName: TLabel
     Left = 54
@@ -66,7 +67,7 @@ object Buchverwalter: TBuchverwalter
     Caption = 'Herausgeber : '
   end
   object lblSucherergebnisse: TLabel
-    Left = 33
+    Left = 0
     Top = 224
     Width = 167
     Height = 32
@@ -149,6 +150,7 @@ object Buchverwalter: TBuchverwalter
     TitleFont.Height = -12
     TitleFont.Name = 'Segoe UI'
     TitleFont.Style = []
+    OnDrawColumnCell = DBGrid1DrawColumnCell
     OnDblClick = DBGrid1DblClick
   end
   object ADOQuery1: TADOQuery

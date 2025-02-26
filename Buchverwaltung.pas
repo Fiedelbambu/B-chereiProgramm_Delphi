@@ -32,6 +32,8 @@ type
     procedure FrameEnter(Sender: TObject);
     procedure btnSucheClick(Sender: TObject);
     procedure DBGrid1DblClick(Sender: TObject);
+    procedure DBGrid1DrawColumnCell(Sender: TObject; const Rect: TRect;
+      DataCol: Integer; Column: TColumn; State: TGridDrawState);
 
   private
     FADOQuery: TADOQuery;
@@ -39,7 +41,7 @@ type
     procedure LoadBooks;
     procedure AdjustGridColumns;
     procedure ApplyLocalFilter;
-
+    function CheckBuchStatus: Boolean;
 
   public
     property ADOQuery: TADOQuery read FADOQuery;
@@ -54,7 +56,7 @@ implementation
 uses
   MainFrame, DatenbankKonfig;
 
-{ --- Konstruktor / Destructor --- }
+{ --- Konstruktor / Destructor besser Lernen --- }
 
 constructor TBuchverwalter.Create(AOwner: TComponent);
 begin
@@ -69,16 +71,24 @@ begin
 
   // DBGrid an die DataSource binden
   DBGrid1.DataSource := FDataSource;
+  DBGrid1.OnDblClick := DBGrid1DblClick;
+
 
 end;
 
-
+destructor TBuchverwalter.Destroy;
+begin
+  inherited Destroy;
+end;
 
 
 procedure TBuchverwalter.DBGrid1DblClick(Sender: TObject);
 var
   SelectedBookName: string;
 begin
+   // Wenn CheckBuchStatus False liefert, abbrechen.
+  if not CheckBuchStatus then
+    Exit;
   if (DBGrid1.DataSource = nil) or DBGrid1.DataSource.DataSet.IsEmpty then
     Exit;
 
@@ -94,10 +104,40 @@ begin
 end;
 
 
-destructor TBuchverwalter.Destroy;
+procedure TBuchverwalter.DBGrid1DrawColumnCell(Sender: TObject;
+  const Rect: TRect; DataCol: Integer; Column: TColumn;
+  State: TGridDrawState);
 begin
-  inherited Destroy;
+  // Überprüfe, ob der Status "ausgeliehen" ist
+  if LowerCase(DBGrid1.DataSource.DataSet.FieldByName('Status').AsString) = 'ausgeliehen' then
+    DBGrid1.Canvas.Brush.Color := clRed  // Zeile rot einfärben
+  else
+    DBGrid1.Canvas.Brush.Color := clWindow; // Standardfarbe
+
+  DBGrid1.DefaultDrawColumnCell(Rect, DataCol, Column, State);
 end;
+
+
+function TBuchverwalter.CheckBuchStatus: Boolean;
+var
+  sStatus: string;
+begin
+  Result := True; // Standard: Buch ist verfügbar
+  if (DataSource1 = nil) or (DataSource1.DataSet.IsEmpty) then Exit;
+
+  sStatus := Trim(DataSource1.DataSet.FieldByName('Status').AsString);
+  ShowMessage('Status des Buches: [' + sStatus + ']'); // Debug-Ausgabe
+
+  if SameText(sStatus, 'ausgeliehen') then
+  begin
+    ShowMessage('Buch ist verliehen');
+    // Beispiel: Deaktiviere Bearbeitungsmodus (falls vorhanden)
+    DBGrid1.Options := DBGrid1.Options - [dgEditing];
+    Result := False;
+  end;
+end;
+
+
 
 { --- Beim Betreten des Frames: Alle Datensätze laden --- }
 procedure TBuchverwalter.FrameEnter(Sender: TObject);
@@ -125,7 +165,8 @@ begin
   '  language AS Sprache, ' +
   '  pages AS Seitenanzahl, ' +
   '  publication_year AS Veröffentlicht, ' +
-  '  inventory_number AS Inventarnummer ' +
+  '  inventory_number AS Inventarnummer, ' +   // Komma hier
+  '  status AS Status ' +                        // Beachte das Leerzeichen am Ende
   'FROM books';
  try
       FADOQuery.Open;
@@ -260,68 +301,5 @@ begin
   end;
 end;
 
-
-
 end.
 
-
-
-
-
-
-{
-// Pseudocode für das Modul Buchverwaltung
-// Autor: Christian Fiedler
-
-MODULE Buchverwaltung
-
-    // --- Teil 1: Buchformular (Anlegen/Bearbeiten) ---
-    // (Die Funktionen aus dem separaten Modul "Buchformular" können hier entweder integriert
-    //  oder als Untermodul referenziert werden. Im Folgenden wird davon ausgegangen, dass
-    //  das Buchformular über eigene Funktionen verfügt, die hier aufgerufen werden.)
-
-    // Funktion zum Öffnen des Buchformulars im "Neu"-Modus
-    FUNCTION OpenNeuesBuchformular()
-        CALL Buchformular.InitializeBuchformular("Neu")
-    END FUNCTION
-
-    // Funktion zum Öffnen des Buchformulars im "Bearbeiten"-Modus
-    FUNCTION OpenBuchformularBearbeiten(ausgewähltesBuch)
-        IF ausgewähltesBuch IS NULL THEN
-            CALL ShowError("Bitte wählen Sie ein Buch aus, um es zu bearbeiten.")
-            RETURN
-        END IF
-        CALL Buchformular.InitializeBuchformular("Bearbeiten", ausgewähltesBuch)
-    END FUNCTION
-
-
-    // Funktion zum Aktualisieren der vollständigen Buchliste (z.B. nach Speichern)
-    FUNCTION RefreshBuchList()
-        VARIABLE alleBücher = Database.GetAllBooks()
-        CALL PopulateDataGrid(buchDataGrid, alleBücher)
-    END FUNCTION
-
-    // --- Initialisierung der gesamten Buchverwaltung ---
-    FUNCTION InitializeBuchverwaltungUI()
-        // Initialisiere die Such- und Filter-Komponenten
-        CALL InitializeBuchsuche()
-
-        // (Optional) Initialisiere zusätzliche UI-Komponenten, z.B. Buttons für "Neues Buch"
-        SET OnClick("NeuesBuchButton") TO OpenNeuesBuchformular
-    END FUNCTION
-
-    // --- Hauptfunktion des Moduls Buchverwaltung ---
-    FUNCTION MainBuchverwaltung()
-        // Initialisiere die Benutzeroberfläche
-        CALL InitializeBuchverwaltungUI()
-
-        // Lade die initiale Buchliste in das DataGrid
-        CALL RefreshBuchList()
-
-        // Starte die Event-Schleife der Buchverwaltungsoberfläche
-        CALL StartEventLoop()
-    END FUNCTION
-
-END MODULE
-
-}
