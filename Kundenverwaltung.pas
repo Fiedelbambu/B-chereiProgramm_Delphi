@@ -12,14 +12,10 @@ type
   // Du kannst TFrame1 umbenennen, z.B. in TKundenverwalter, falls gewünscht
   TFrame1 = class(TFrame)
     lblKundenverwaltung: TLabel;
-    PaintBox1: TPaintBox;
     lblSuchfelf: TLabel;
     btn_Suchen: TButton;
-    PaintBox2: TPaintBox;
     lblKundendaten: TLabel;
-    PaintBox3: TPaintBox;
     DBGrid1: TDBGrid;
-    PaintBox4: TPaintBox;
     btn_KundenAnlegen: TButton;
     SBoxKundenverwaltung: TSearchBox;
     ADOQuery1: TADOQuery;
@@ -92,12 +88,14 @@ begin
     // Aliasnamen für deutsche Spaltenbezeichnungen
     FADOQuery.SQL.Text :=
       'SELECT ' +
+      '  customer_id AS Kundennummer, ' +
       '  first_name AS Name, ' +
       '  last_name AS Familienname, ' +
       '  email AS "E-Mail", ' +
       '  phone AS Telefon, ' +
       '  birth_date AS Geburtsdatum, ' +
       '  street AS Straße, ' +
+      '  house_number AS Hausnummer, ' +
       '  postal_code AS Postleitzahl, ' +
       '  city AS Stadt ' +
       'FROM customers';

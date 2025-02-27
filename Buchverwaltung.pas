@@ -85,12 +85,17 @@ end;
 procedure TBuchverwalter.DBGrid1DblClick(Sender: TObject);
 var
   SelectedBookName: string;
+  sStatus: string;
 begin
-   // Wenn CheckBuchStatus False liefert, abbrechen.
-  if not CheckBuchStatus then
-    Exit;
   if (DBGrid1.DataSource = nil) or DBGrid1.DataSource.DataSet.IsEmpty then
     Exit;
+
+  sStatus := LowerCase(Trim(DBGrid1.DataSource.DataSet.FieldByName('Status').AsString));
+  if sStatus = 'ausgeliehen' then
+  begin
+    ShowMessage('Buch ist verliehen.');
+    Exit;
+  end;
 
   // Lies den Buchnamen aus dem Dataset
   SelectedBookName := DBGrid1.DataSource.DataSet.FieldByName('name').AsString;
@@ -102,6 +107,7 @@ begin
   if Form1.CurrentFrame is TAusleihDialog then
     TAusleihDialog(Form1.CurrentFrame).SetBookData(SelectedBookName);
 end;
+
 
 
 procedure TBuchverwalter.DBGrid1DrawColumnCell(Sender: TObject;

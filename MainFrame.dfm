@@ -2,8 +2,8 @@ object Form1: TForm1
   Left = 0
   Top = 0
   Caption = 'B'#252'cherei Verwaltung'
-  ClientHeight = 513
-  ClientWidth = 697
+  ClientHeight = 541
+  ClientWidth = 859
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -15,15 +15,16 @@ object Form1: TForm1
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
-    Width = 697
+    Width = 859
     Height = 25
     Anchors = [akLeft, akTop, akRight, akBottom]
     AutoSize = True
     ButtonHeight = 25
     Caption = 'ToolBar1'
     TabOrder = 0
+    ExplicitWidth = 697
     DesignSize = (
-      697
+      859
       25)
     object Button1: TButton
       Left = 0
@@ -38,12 +39,12 @@ object Form1: TForm1
     object ToolButton1: TToolButton
       Left = 75
       Top = 0
-      Width = 14
+      Width = 28
       Caption = 'ToolButton1'
       Style = tbsSeparator
     end
     object btn_buecher: TButton
-      Left = 89
+      Left = 103
       Top = 0
       Width = 75
       Height = 25
@@ -53,15 +54,15 @@ object Form1: TForm1
       OnClick = btn_buecherClick
     end
     object ToolButton2: TToolButton
-      Left = 164
+      Left = 178
       Top = 0
-      Width = 13
+      Width = 28
       Caption = 'ToolButton2'
       ImageIndex = 0
       Style = tbsSeparator
     end
     object btnAusleihe: TButton
-      Left = 177
+      Left = 206
       Top = 0
       Width = 75
       Height = 25
@@ -71,15 +72,15 @@ object Form1: TForm1
       OnClick = btnAusleiheClick
     end
     object ToolButton3: TToolButton
-      Left = 252
+      Left = 281
       Top = 0
-      Width = 13
+      Width = 28
       Caption = 'ToolButton3'
       ImageIndex = 1
       Style = tbsSeparator
     end
     object btnMahnungsver: TButton
-      Left = 265
+      Left = 309
       Top = 0
       Width = 75
       Height = 25
@@ -89,15 +90,16 @@ object Form1: TForm1
       OnClick = btnMahnungsverClick
     end
     object ToolButton4: TToolButton
-      Left = 340
+      Left = 384
       Top = 0
-      Width = 13
+      Width = 28
       Caption = 'ToolButton4'
       ImageIndex = 2
       Style = tbsSeparator
     end
     object btnEinstellungen: TButton
-      Left = 353
+      AlignWithMargins = True
+      Left = 412
       Top = 0
       Width = 75
       Height = 25
@@ -107,15 +109,15 @@ object Form1: TForm1
       OnClick = btnEinstellungenClick
     end
     object ToolButton5: TToolButton
-      Left = 428
+      Left = 487
       Top = 0
-      Width = 21
+      Width = 28
       Caption = 'ToolButton5'
       ImageIndex = 3
       Style = tbsSeparator
     end
     object btn_Hauptmanu: TButton
-      Left = 449
+      Left = 515
       Top = 0
       Width = 101
       Height = 25
@@ -126,15 +128,15 @@ object Form1: TForm1
       OnClick = btn_HauptmanuClick
     end
     object ToolButton6: TToolButton
-      Left = 550
+      Left = 616
       Top = 0
-      Width = 32
+      Width = 20
       Caption = 'ToolButton6'
       ImageIndex = 4
       Style = tbsSeparator
     end
     object lblClock: TLabel
-      Left = 582
+      Left = 636
       Top = 0
       Width = 46
       Height = 25
@@ -154,11 +156,12 @@ object Form1: TForm1
   object pnlContainer: TPanel
     Left = 0
     Top = 25
-    Width = 697
-    Height = 488
+    Width = 859
+    Height = 516
     Align = alClient
     AutoSize = True
     TabOrder = 1
+    ExplicitWidth = 845
   end
   object Timer1: TTimer
     OnTimer = Timer1Timer

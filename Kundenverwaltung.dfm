@@ -1,7 +1,7 @@
 object Frame1: TFrame1
   Left = 0
   Top = 0
-  Width = 725
+  Width = 860
   Height = 475
   Anchors = [akLeft, akRight]
   TabOrder = 0
@@ -9,7 +9,7 @@ object Frame1: TFrame1
   object lblKundenverwaltung: TLabel
     Left = 0
     Top = 0
-    Width = 725
+    Width = 860
     Height = 37
     Align = alTop
     Alignment = taCenter
@@ -22,15 +22,9 @@ object Frame1: TFrame1
     ParentFont = False
     ExplicitWidth = 223
   end
-  object PaintBox1: TPaintBox
-    Left = 0
-    Top = 43
-    Width = 637
-    Height = 8
-  end
   object lblSuchfelf: TLabel
-    Left = 3
-    Top = 76
+    Left = 123
+    Top = 68
     Width = 73
     Height = 25
     Caption = 'Suchfeld'
@@ -41,15 +35,9 @@ object Frame1: TFrame1
     Font.Style = []
     ParentFont = False
   end
-  object PaintBox2: TPaintBox
-    Left = 0
-    Top = 123
-    Width = 637
-    Height = 8
-  end
   object lblKundendaten: TLabel
-    Left = 3
-    Top = 137
+    Left = 0
+    Top = 161
     Width = 144
     Height = 32
     Alignment = taCenter
@@ -61,21 +49,9 @@ object Frame1: TFrame1
     Font.Style = []
     ParentFont = False
   end
-  object PaintBox3: TPaintBox
-    Left = 3
-    Top = 395
-    Width = 637
-    Height = 8
-  end
-  object PaintBox4: TPaintBox
-    Left = 0
-    Top = 175
-    Width = 722
-    Height = 20
-  end
   object btn_Suchen: TButton
-    Left = 544
-    Top = 80
+    Left = 664
+    Top = 72
     Width = 75
     Height = 25
     Caption = 'Suchen'
@@ -84,7 +60,7 @@ object Frame1: TFrame1
   object DBGrid1: TDBGrid
     Left = 0
     Top = 209
-    Width = 722
+    Width = 857
     Height = 168
     TabOrder = 1
     TitleFont.Charset = DEFAULT_CHARSET
@@ -94,7 +70,7 @@ object Frame1: TFrame1
     TitleFont.Style = []
   end
   object btn_KundenAnlegen: TButton
-    Left = 240
+    Left = 344
     Top = 417
     Width = 161
     Height = 25
@@ -103,8 +79,8 @@ object Frame1: TFrame1
     OnClick = btn_KundenAnlegenClick
   end
   object SBoxKundenverwaltung: TSearchBox
-    Left = 82
-    Top = 81
+    Left = 202
+    Top = 73
     Width = 456
     Height = 23
     TabOrder = 3
@@ -114,7 +90,7 @@ object Frame1: TFrame1
   object ADOQuery1: TADOQuery
     Filtered = True
     Parameters = <>
-    Left = 664
-    Top = 72
+    Left = 800
+    Top = 408
   end
 end
