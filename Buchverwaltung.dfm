@@ -1,17 +1,17 @@
 object Buchverwalter: TBuchverwalter
   Left = 0
   Top = 0
-  Width = 861
-  Height = 449
+  Width = 860
+  Height = 525
   TabOrder = 0
   OnEnter = FrameEnter
   DesignSize = (
-    861
-    449)
+    860
+    525)
   object lblBuchverwaltung: TLabel
     Left = 0
     Top = 0
-    Width = 861
+    Width = 860
     Height = 37
     Align = alTop
     Alignment = taCenter
@@ -26,10 +26,12 @@ object Buchverwalter: TBuchverwalter
   end
   object PaintBox1: TPaintBox
     Left = 0
-    Top = 43
-    Width = 858
+    Top = 51
+    Width = 857
     Height = 14
     Anchors = [akLeft, akRight]
+    ExplicitTop = 43
+    ExplicitWidth = 858
   end
   object lblName: TLabel
     Left = 54
@@ -68,8 +70,8 @@ object Buchverwalter: TBuchverwalter
   end
   object lblSucherergebnisse: TLabel
     Left = 0
-    Top = 224
-    Width = 167
+    Top = 207
+    Width = 166
     Height = 32
     Alignment = taCenter
     Anchors = [akLeft, akRight]
@@ -81,16 +83,18 @@ object Buchverwalter: TBuchverwalter
     Font.Style = []
     ParentFont = False
     Layout = tlCenter
+    ExplicitWidth = 167
   end
   object btn_BuchAnlegen: TButton
     Left = 264
-    Top = 408
-    Width = 336
+    Top = 479
+    Width = 335
     Height = 25
     Anchors = [akLeft, akRight]
     Caption = 'Neues Buch Anlegen'
     TabOrder = 0
     OnClick = btn_BuchAnlegenClick
+    ExplicitWidth = 336
   end
   object EdtName: TEdit
     Left = 128
@@ -139,9 +143,9 @@ object Buchverwalter: TBuchverwalter
   object DBGrid1: TDBGrid
     AlignWithMargins = True
     Left = 0
-    Top = 280
-    Width = 858
-    Height = 120
+    Top = 255
+    Width = 857
+    Height = 203
     Anchors = [akLeft, akRight]
     DataSource = DataSource1
     TabOrder = 7
